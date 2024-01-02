@@ -14,8 +14,18 @@ local after_text = "zxcvbnmadfghjkl"
 local function getActionsMenu()
 	local mappings = config.getState("mappings")
 
+	local already_saved = current_index > 0
+
+	local text
+
+	if already_saved == true then
+		text = string.format("%s Remove Current", mappings.toggle)
+	else
+		text = string.format("%s Save Current File", mappings.toggle)
+	end
+
 	return {
-		string.format("%s Save/Remove", mappings.toggle),
+		string.format(text, mappings.toggle),
 		string.format("%s Edit File", mappings.edit),
 		string.format("%s Clear All Items", mappings.clear_all_items),
 		string.format("%s Delete mode", mappings.delete_mode),
@@ -86,7 +96,6 @@ local function renderBuffer(buffer)
 
 	local buf = buffer or vim.api.nvim_get_current_buf()
 	local lines = { "" }
-	local actionsMenu = getActionsMenu()
 
 	local formattedFleNames = format_file_names(fileNames)
 
@@ -112,6 +121,8 @@ local function renderBuffer(buffer)
 
 	-- Add a separator
 	table.insert(lines, "")
+
+	local actionsMenu = getActionsMenu()
 
 	-- Add actions to the menu
 	for _, action in ipairs(actionsMenu) do
@@ -190,8 +201,6 @@ end
 function M.openMenu()
 	local filename = vim.fn.bufname("%")
 
-	local actionsMenu = getActionsMenu()
-
 	local parsedFileNames = format_file_names(fileNames)
 
 	local max_width = 14
@@ -202,7 +211,7 @@ function M.openMenu()
 	end
 
 	local menuBuf = createMenuBuffer(filename)
-	local height = #fileNames + #actionsMenu + 3
+	local height = #fileNames + 5 + 3
 	local width = max_width + 8
 	local mappings = config.getState("mappings")
 
