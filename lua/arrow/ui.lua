@@ -3,22 +3,11 @@ local M = {}
 local config = require("arrow.config")
 
 local fileNames = {
-	"lua/create.rb",
-	"lua/core/mappings.lua",
-	"lua/plugins/mappings.lua",
-	"lua/plugins/harpoon.lua",
-	"lua/core/autocmds.lua",
-	"lua/mood-scripts/statusline.lua",
-	"extra/examples/lsp.lua",
-	"lua/plugins/init.lua",
-	"handbook.md",
-	"lua/mood-scripts/custom_telescope.lua",
-	"lua/mood-scripts/setup-telescope.lua",
-	"lua/mood-scripts/setup-telescope.lua",
-	"lua/plugins/dashboard_plugin.lua",
-	"lua/core/set.lua",
-	"README.md",
+	"lua/arrow/ui.lua",
+	"lua/arrow/init.lua",
 }
+
+local current_index = 0
 
 local after_text = "zxcvbnmadfghjkl"
 
@@ -88,10 +77,13 @@ local function openFile(fileNumber)
 	end
 
 	closeMenu()
+
 	vim.cmd(string.format(":edit %s", fileName))
 end
 
 local function renderBuffer(buffer)
+	vim.api.nvim_buf_set_option(buffer, "modifiable", true)
+
 	local buf = buffer or vim.api.nvim_get_current_buf()
 	local lines = { "" }
 	local actionsMenu = getActionsMenu()
@@ -104,6 +96,16 @@ local function renderBuffer(buffer)
 		if i > 9 then
 			displayIndex = after_text:sub(i - 9, i - 9)
 		end
+
+		if fileNames[i] == vim.b.filename then
+			vim.api.nvim_buf_add_highlight(buf, -1, "@error", i + 3, 0, -1)
+
+			current_index = i
+		end
+
+		vim.keymap.set("n", "" .. displayIndex, function()
+			openFile(i)
+		end, { buffer = buf, noremap = false, silent = true })
 
 		table.insert(lines, string.format("   %s %s", displayIndex, fileName))
 	end
@@ -124,8 +126,11 @@ local function renderBuffer(buffer)
 end
 
 -- Function to create the menu buffer with a list format
-local function createMenuBuffer()
+local function createMenuBuffer(filename)
 	local buf = vim.api.nvim_create_buf(false, true)
+
+	vim.b.filename = filename
+
 	vim.b.delete_mode = false
 	renderBuffer(buf)
 
@@ -137,6 +142,8 @@ local function render_highlights(buffer)
 
 	vim.api.nvim_buf_clear_namespace(buffer, -1, 0, -1)
 	local menuBuf = buffer or vim.api.nvim_get_current_buf()
+
+	vim.api.nvim_buf_add_highlight(menuBuf, -1, "@character.special", current_index, 0, -1)
 
 	for i, _ in ipairs(fileNames) do
 		if vim.b.delete_mode then
@@ -181,18 +188,20 @@ local function render_highlights(buffer)
 end
 
 function M.openMenu()
+	local filename = vim.fn.bufname("%")
+
 	local actionsMenu = getActionsMenu()
 
 	local parsedFileNames = format_file_names(fileNames)
 
-	local max_width = 0
+	local max_width = 14
 	for _, v in pairs(parsedFileNames) do
 		if #v > max_width then
 			max_width = #v
 		end
 	end
 
-	local menuBuf = createMenuBuffer()
+	local menuBuf = createMenuBuffer(filename)
 	local height = #fileNames + #actionsMenu + 3
 	local width = max_width + 8
 	local mappings = config.getState("mappings")
@@ -216,10 +225,9 @@ function M.openMenu()
 
 	vim.keymap.set("n", mappings.delete_mode, function()
 		vim.b.delete_mode = not vim.b.delete_mode
+		renderBuffer(menuBuf)
 		render_highlights(menuBuf)
 	end, { noremap = true, silent = true, buffer = menuBuf })
-
-	render_highlights(menuBuf)
 
 	local hl = vim.api.nvim_get_hl_by_name("Cursor", true)
 
@@ -233,6 +241,7 @@ function M.openMenu()
 		callback = function()
 			local old_hl = vim.api.nvim_get_hl_by_name("Cursor", true)
 
+			current_index = 0
 			old_hl.blend = 0
 			vim.api.nvim_set_hl(0, "Cursor", old_hl)
 			vim.opt.guicursor:remove("a:Cursor/lCursor")
@@ -240,6 +249,8 @@ function M.openMenu()
 	})
 
 	vim.api.nvim_set_current_win(win)
+
+	render_highlights(menuBuf)
 end
 
 -- Command to trigger the menu
