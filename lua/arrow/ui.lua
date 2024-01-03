@@ -169,9 +169,9 @@ local function render_highlights(buffer)
 
 	for i, _ in ipairs(fileNames) do
 		if vim.b.arrow_current_mode == "delete_mode" then
-			vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowDeleteMode", i, 0, 4)
+			vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowDeleteMode", i, 3, 4)
 		else
-			vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowFileIndex", i, 0, 4)
+			vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowFileIndex", i, 3, 4)
 		end
 	end
 
@@ -182,7 +182,7 @@ local function render_highlights(buffer)
 	end
 
 	for i = #fileNames + 3, #fileNames + #actionsMenu + 3 do
-		vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowAction", i - 1, 0, 4)
+		vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowAction", i - 1, 3, 4)
 	end
 
 	-- Find the line containing "d - Delete Mode"
@@ -376,6 +376,9 @@ function M.openMenu()
 			vim.opt.guicursor:remove("a:Cursor/lCursor")
 		end,
 	})
+
+	-- disable cursorline for this buffer
+	vim.wo.cursorline = false
 
 	vim.api.nvim_set_current_win(win)
 
