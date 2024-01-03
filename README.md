@@ -51,6 +51,7 @@ Just press the leader_key set on setup and follow you heart. (Is that easy)
 ```lua
 {
   show_icons = true,
+  always_show_path = false,
   mappings = {
 		edit = "e",
 		delete_mode = "d",

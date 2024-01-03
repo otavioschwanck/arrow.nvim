@@ -59,7 +59,11 @@ local function format_file_names(file_names)
 		local tail = vim.fn.fnamemodify(full_path, ":t:r")
 		local tail_with_extension = vim.fn.fnamemodify(full_path, ":t")
 
-		if #name_occurrences[tail] == 1 and not (vim.tbl_contains(full_path_list, tail)) then
+		if
+			not (config.getState("always_show_path"))
+			and #name_occurrences[tail] == 1
+			and not (vim.tbl_contains(full_path_list, tail))
+		then
 			table.insert(formatted_names, tail_with_extension)
 		else
 			local path = vim.fn.fnamemodify(full_path, ":h")

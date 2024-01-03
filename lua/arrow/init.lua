@@ -28,6 +28,7 @@ function M.setup(opts)
 	local leader_key = opts.leader_key or ";"
 
 	config.setState("leader_key", leader_key)
+	config.setState("always_show_path", opts.always_show_path or false)
 	config.setState("show_icons", opts.show_icons)
 	config.setState("after_9_keys", opts.after_9_keys or "zxcbnmZXVBNM,afghjklAFGHJKLwrtyuiopWRTYUIOP")
 
