@@ -1,6 +1,7 @@
 local M = {}
 
 local config = require("arrow.config")
+local utils = require("arrow.utils")
 
 local function normalize_path_to_filename(path)
 	return path:gsub("/", "_")
@@ -36,7 +37,7 @@ function M.remove(filename)
 end
 
 function M.toggle(filename)
-	filename = filename or vim.fn.bufname("%")
+	filename = filename or utils.get_path_for("%")
 
 	local index = M.is_saved(filename)
 	if index then
@@ -85,7 +86,7 @@ function M.go_to(index)
 end
 
 function M.next()
-	local current_index = M.is_saved(vim.fn.bufname("%"))
+	local current_index = M.is_saved(utils.get_path_for("%"))
 	local next_index
 
 	if current_index and current_index < #vim.g.arrow_filenames then
@@ -98,7 +99,7 @@ function M.next()
 end
 
 function M.previous()
-	local current_index = M.is_saved(vim.fn.bufname("%"))
+	local current_index = M.is_saved(utils.get_path_for("%"))
 	local previous_index
 
 	if current_index and current_index == 1 then

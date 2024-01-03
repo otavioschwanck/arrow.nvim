@@ -28,4 +28,19 @@ function M.join_two_arrays(tableA, tableB)
 	return newTable
 end
 
+function M.get_path_for(buffer)
+	local bufname = vim.fn.bufname(buffer)
+
+	local cwd = vim.fn.getcwd()
+
+	local escaped_cwd = cwd:gsub("[%(%)%.%%%+%-%*%?%[%]%^%$]", "%%%1")
+
+	if bufname:find("^" .. escaped_cwd .. "/") then
+		local relative_path = bufname:gsub("^" .. escaped_cwd .. "/", "")
+		return relative_path
+	else
+		return bufname
+	end
+end
+
 return M

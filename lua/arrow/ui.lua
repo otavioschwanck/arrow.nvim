@@ -2,6 +2,7 @@ local M = {}
 
 local config = require("arrow.config")
 local persist = require("arrow.persist")
+local utils = require("arrow.utils")
 
 local fileNames = {}
 local to_highlight = {}
@@ -13,7 +14,7 @@ local function getActionsMenu()
 
 	if #vim.g.arrow_filenames == 0 then
 		return {
-			string.format("%s Save File", mappings.toggle),
+			string.format("%s Save Current File", mappings.toggle),
 		}
 	end
 
@@ -277,7 +278,7 @@ end
 function M.openMenu()
 	to_highlight = {}
 	fileNames = vim.g.arrow_filenames
-	local filename = vim.fn.bufname("%")
+	local filename = utils.get_path_for("%")
 
 	local parsedFileNames = format_file_names(fileNames)
 
