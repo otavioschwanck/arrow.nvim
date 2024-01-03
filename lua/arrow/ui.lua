@@ -23,7 +23,7 @@ local function getActionsMenu()
 
 	return {
 		string.format(text, mappings.toggle),
-		string.format("%s Edit File", mappings.edit),
+		string.format("%s Edit Arrow File", mappings.edit),
 		string.format("%s Clear All Items", mappings.clear_all_items),
 		string.format("%s Delete mode", mappings.delete_mode),
 		string.format("%s Open Vertical", mappings.open_vertical),
@@ -278,7 +278,7 @@ function M.openMenu()
 
 	local menuBuf = createMenuBuffer(filename)
 	local height = #fileNames + 10
-	local width = max_width + 8
+	local width = max_width + 10
 	local mappings = config.getState("mappings")
 
 	local row = math.ceil((vim.o.lines - height) / 2)

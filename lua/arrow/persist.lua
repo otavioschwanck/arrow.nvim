@@ -74,6 +74,42 @@ function M.cache_file()
 	vim.fn.writefile(lines, cache_file_path())
 end
 
+function M.go_to(index)
+	local filename = vim.g.arrow_filenames[index]
+
+	if filename then
+		vim.cmd(":edit " .. filename)
+	end
+end
+
+function M.next()
+	local current_index = M.is_saved(vim.fn.bufname("%"))
+	local next_index
+
+	if current_index and current_index < #vim.g.arrow_filenames then
+		next_index = current_index + 1
+	else
+		next_index = 1
+	end
+
+	M.go_to(next_index)
+end
+
+function M.previous()
+	local current_index = M.is_saved(vim.fn.bufname("%"))
+	local previous_index
+
+	if current_index and current_index == 1 then
+		previous_index = #vim.g.arrow_filenames
+	elseif current_index then
+		previous_index = current_index - 1
+	else
+		previous_index = #vim.g.arrow_filenames
+	end
+
+	M.go_to(previous_index)
+end
+
 function M.open_cache_file()
 	local cache_path = cache_file_path()
 	local cache_content = vim.fn.readfile(cache_path)
