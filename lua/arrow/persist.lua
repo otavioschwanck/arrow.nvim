@@ -140,6 +140,13 @@ function M.open_cache_file()
 	local close_buffer = ":lua vim.api.nvim_win_close(" .. winid .. ", {force = true})<CR>"
 	vim.api.nvim_buf_set_keymap(bufnr, "n", "q", close_buffer, { noremap = true, silent = true })
 	vim.api.nvim_buf_set_keymap(bufnr, "n", "<Esc>", close_buffer, { noremap = true, silent = true })
+	vim.keymap.set(
+		"n",
+		config.getState("leader_key"),
+		function() end,
+		{ noremap = true, silent = true, buffer = bufnr }
+	)
+
 	vim.keymap.set("n", "<CR>", function()
 		local line = vim.api.nvim_get_current_line()
 
