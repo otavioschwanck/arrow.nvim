@@ -100,7 +100,7 @@ local function renderBuffer(buffer)
 		end
 
 		if fileNames[i] == vim.b.filename then
-			vim.api.nvim_buf_add_highlight(buf, -1, "@error", i + 3, 0, -1)
+			vim.api.nvim_buf_add_highlight(buf, -1, "ArrowDeleteMode", i + 3, 0, -1)
 
 			current_index = i
 		end
@@ -155,13 +155,13 @@ local function render_highlights(buffer)
 	vim.api.nvim_buf_clear_namespace(buffer, -1, 0, -1)
 	local menuBuf = buffer or vim.api.nvim_get_current_buf()
 
-	vim.api.nvim_buf_add_highlight(menuBuf, -1, "@character.special", current_index, 0, -1)
+	vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowCurrentFile", current_index, 0, -1)
 
 	for i, _ in ipairs(fileNames) do
 		if vim.b.arrow_current_mode == "delete_mode" then
-			vim.api.nvim_buf_add_highlight(menuBuf, -1, "@error", i, 0, 4)
+			vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowDeleteMode", i, 0, 4)
 		else
-			vim.api.nvim_buf_add_highlight(menuBuf, -1, "@attribute", i, 0, 4)
+			vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowFileIndex", i, 0, 4)
 		end
 	end
 
@@ -172,7 +172,7 @@ local function render_highlights(buffer)
 	end
 
 	for i = #fileNames + 2, #fileNames + #actionsMenu + 2 do
-		vim.api.nvim_buf_add_highlight(menuBuf, -1, "@character", i - 1, 0, 4)
+		vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowAction", i - 1, 0, 4)
 	end
 
 	-- Find the line containing "d - Delete Mode"
@@ -196,19 +196,19 @@ local function render_highlights(buffer)
 
 	if deleteModeLine >= 0 then
 		if vim.b.arrow_current_mode == "delete_mode" then
-			vim.api.nvim_buf_add_highlight(menuBuf, -1, "@error", #fileNames + deleteModeLine + 2, 0, -1)
+			vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowDeleteMode", #fileNames + deleteModeLine + 2, 0, -1)
 		end
 	end
 
 	if verticalModeLine >= 0 then
 		if vim.b.arrow_current_mode == "vertical_mode" then
-			vim.api.nvim_buf_add_highlight(menuBuf, -1, "@character", #fileNames + verticalModeLine + 2, 0, -1)
+			vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowAction", #fileNames + verticalModeLine + 2, 0, -1)
 		end
 	end
 
 	if horizontalModelLine >= 0 then
 		if vim.b.arrow_current_mode == "horizontal_mode" then
-			vim.api.nvim_buf_add_highlight(menuBuf, -1, "@character", #fileNames + horizontalModelLine + 2, 0, -1)
+			vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowAction", #fileNames + horizontalModelLine + 2, 0, -1)
 		end
 	end
 
@@ -220,7 +220,7 @@ local function render_highlights(buffer)
 
 		local match_start, match_end = string.find(line_content, pattern)
 		if match_start then
-			vim.api.nvim_buf_add_highlight(menuBuf, -1, "@character", line_number - 1, match_start - 1, match_end)
+			vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowAction", line_number - 1, match_start - 1, match_end)
 		end
 
 		line_number = line_number + 1

@@ -89,5 +89,12 @@ statuline.text_for_statusline_with_icons() -- Same, but with an bow and arrow ic
 
 ![statusline](https://i.imgur.com/v7Rvagj.png)
 
+## Highlights
+
+- ArrowFileIndex
+- ArrowCurrentFile
+- ArrowAction
+- ArrowDeleteMode
+
 ### Do you like my work?  Please, buy me a coffee
 https://www.buymeacoffee.com/otavioschwanck

@@ -8,6 +8,11 @@ local persist = require("arrow.persist")
 M.config = {}
 
 function M.setup(opts)
+	vim.cmd("highlight default link ArrowFileIndex Attribute")
+	vim.cmd("highlight default link ArrowCurrentFile SpecialChar")
+	vim.cmd("highlight default link ArrowAction Character")
+	vim.cmd("highlight default link ArrowDeleteMode DiagnosticError")
+
 	opts = opts or {}
 
 	local default_mappings = {
