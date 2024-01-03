@@ -13,7 +13,6 @@ end
 vim.g.arrow_filenames = {}
 
 function M.save(filename)
-	-- Check if the filename is not already saved
 	if not M.is_saved(filename) then
 		local new_table = vim.g.arrow_filenames
 		table.insert(new_table, filename)
@@ -73,6 +72,58 @@ function M.cache_file()
 	local content = vim.fn.join(vim.g.arrow_filenames, "\n")
 	local lines = vim.fn.split(content, "\n")
 	vim.fn.writefile(lines, cache_file_path())
+end
+
+function M.open_cache_file()
+	local cache_path = cache_file_path()
+	local cache_content = vim.fn.readfile(cache_path)
+
+	local bufnr = vim.api.nvim_create_buf(false, true)
+
+	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, cache_content)
+
+	local width = math.min(80, vim.fn.winwidth(0) - 4)
+	local height = math.min(20, #cache_content + 2)
+
+	local row = math.ceil((vim.o.lines - height) / 2)
+	local col = math.ceil((vim.o.columns - width) / 2)
+
+	local opts = {
+		style = "minimal",
+		relative = "editor",
+		width = width,
+		height = height,
+		row = row,
+		col = col,
+		focusable = true,
+		border = "single",
+	}
+
+	local winid = vim.api.nvim_open_win(bufnr, true, opts)
+
+	local close_buffer = ":lua vim.api.nvim_win_close(" .. winid .. ", {force = true})<CR>"
+	vim.api.nvim_buf_set_keymap(bufnr, "n", "q", close_buffer, { noremap = true, silent = true })
+	vim.api.nvim_buf_set_keymap(bufnr, "n", "<Esc>", close_buffer, { noremap = true, silent = true })
+	vim.keymap.set("n", "<CR>", function()
+		local line = vim.api.nvim_get_current_line()
+
+		vim.api.nvim_win_close(winid, { force = true })
+		vim.cmd(":edit " .. line)
+	end, { noremap = true, silent = true, buffer = bufnr })
+
+	vim.api.nvim_create_autocmd("BufLeave", {
+		buffer = bufnr,
+		desc = "save cache buffer on leave",
+		callback = function()
+			local updated_content = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+			vim.fn.writefile(updated_content, cache_path)
+			M.load_cache_file()
+		end,
+	})
+
+	vim.cmd("setlocal nu")
+
+	return bufnr, winid
 end
 
 return M

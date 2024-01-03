@@ -15,6 +15,8 @@ function M.setup(opts)
 		delete_mode = "d",
 		clear_all_items = "C",
 		toggle = "s",
+		open_vertical = "|",
+		open_horizontal = "-",
 		quit = "q",
 	}
 
@@ -22,6 +24,7 @@ function M.setup(opts)
 
 	config.setState("leader_key", leader_key)
 	config.setState("show_icons", opts.show_icons)
+	config.setState("icons", opts.icons)
 
 	config.setState("save_key", opts.save_key or function()
 		return vim.loop.cwd()
