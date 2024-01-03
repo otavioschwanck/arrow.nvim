@@ -14,7 +14,7 @@ local function getActionsMenu()
 
 	if #vim.g.arrow_filenames == 0 then
 		return {
-			string.format("%s Save Current File", mappings.toggle),
+			string.format("%s Save File", mappings.toggle),
 		}
 	end
 
