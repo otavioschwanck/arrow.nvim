@@ -1,11 +1,9 @@
 local M = {}
 
 local config = require("arrow.config")
+local persist = require("arrow.persist")
 
-local fileNames = {
-	"lua/arrow/ui.lua",
-	"lua/arrow/init.lua",
-}
+local fileNames = {}
 
 local current_index = 0
 
@@ -77,20 +75,6 @@ local function closeMenu()
 	vim.api.nvim_win_close(win, true)
 end
 
--- Function to open the selected file
-local function openFile(fileNumber)
-	local fileName = fileNames[fileNumber]
-
-	if not fileName then
-		print("Invalid file number")
-		return
-	end
-
-	closeMenu()
-
-	vim.cmd(string.format(":edit %s", fileName))
-end
-
 local function renderBuffer(buffer)
 	vim.api.nvim_buf_set_option(buffer, "modifiable", true)
 
@@ -113,7 +97,7 @@ local function renderBuffer(buffer)
 		end
 
 		vim.keymap.set("n", "" .. displayIndex, function()
-			openFile(i)
+			M.openFile(i)
 		end, { buffer = buf, noremap = false, silent = true })
 
 		table.insert(lines, string.format("   %s %s", displayIndex, fileName))
@@ -198,12 +182,36 @@ local function render_highlights(buffer)
 	end
 end
 
+-- Function to open the selected file
+function M.openFile(fileNumber)
+	local fileName = fileNames[fileNumber]
+
+	if vim.b.delete_mode then
+		persist.remove(fileName)
+
+		fileNames = vim.g.arrow_filenames
+
+		renderBuffer(vim.api.nvim_get_current_buf())
+		render_highlights(vim.api.nvim_get_current_buf())
+	else
+		if not fileName then
+			print("Invalid file number")
+			return
+		end
+
+		closeMenu()
+
+		vim.cmd(string.format(":edit %s", fileName))
+	end
+end
+
 function M.openMenu()
+	fileNames = vim.g.arrow_filenames
 	local filename = vim.fn.bufname("%")
 
 	local parsedFileNames = format_file_names(fileNames)
 
-	local max_width = 14
+	local max_width = 16
 	for _, v in pairs(parsedFileNames) do
 		if #v > max_width then
 			max_width = #v
@@ -230,6 +238,14 @@ function M.openMenu()
 
 	vim.keymap.set("n", config.getState("leader_key"), closeMenu, { noremap = true, silent = true, buffer = menuBuf })
 	vim.keymap.set("n", mappings.quit, closeMenu, { noremap = true, silent = true, buffer = menuBuf })
+	vim.keymap.set("n", mappings.toggle, function()
+		persist.toggle(filename)
+		closeMenu()
+	end, { noremap = true, silent = true, buffer = menuBuf })
+	vim.keymap.set("n", mappings.clear_all_items, function()
+		persist.clear()
+		closeMenu()
+	end)
 	vim.keymap.set("n", "<Esc>", closeMenu, { noremap = true, silent = true, buffer = menuBuf })
 
 	vim.keymap.set("n", mappings.delete_mode, function()
