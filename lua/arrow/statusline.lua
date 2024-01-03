@@ -2,6 +2,7 @@ local M = {}
 
 local persist = require("arrow.persist")
 local config = require("arrow.config")
+local utils = require("arrow.utils")
 
 local function show_right_index(index)
 	if index < 10 then
@@ -12,9 +13,7 @@ local function show_right_index(index)
 end
 
 function M.in_on_arrow_file()
-	local filename = vim.fn.expand("%")
-
-	return persist.is_saved(filename)
+	return persist.is_saved(utils.get_path_for("%"))
 end
 
 function M.text_for_statusline()
