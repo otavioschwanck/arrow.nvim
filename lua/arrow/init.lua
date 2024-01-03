@@ -108,6 +108,4 @@ function M.setup(opts)
 	persist.load_cache_file()
 end
 
-M.setup({ mappings = { quit = "q" }, full_path_list = { "set", "init" } })
-
 return M
