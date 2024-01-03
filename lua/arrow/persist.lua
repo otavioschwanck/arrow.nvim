@@ -36,6 +36,8 @@ function M.remove(filename)
 end
 
 function M.toggle(filename)
+	filename = filename or vim.fn.bufname("%")
+
 	local index = M.is_saved(filename)
 	if index then
 		M.remove(filename)
