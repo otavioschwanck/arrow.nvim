@@ -254,8 +254,6 @@ function M.openFile(fileNumber)
 			action = ":split %s"
 		end
 
-		print(action)
-
 		closeMenu()
 
 		vim.cmd(string.format(action, fileName))
