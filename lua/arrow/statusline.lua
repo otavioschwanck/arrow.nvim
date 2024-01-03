@@ -11,14 +11,14 @@ local function show_right_index(index)
 	end
 end
 
-function M.is_on_harpoon_file()
+function M.in_on_arrow_file()
 	local filename = vim.fn.expand("%")
 
 	return persist.is_saved(filename)
 end
 
 function M.text_for_statusline()
-	local index = M.is_on_harpoon_file()
+	local index = M.in_on_arrow_file()
 
 	if index then
 		return show_right_index(index)
@@ -28,7 +28,7 @@ function M.text_for_statusline()
 end
 
 function M.text_for_statusline_with_icons()
-	local index = M.is_on_harpoon_file()
+	local index = M.in_on_arrow_file()
 
 	if index then
 		return "󱡁 " .. show_right_index(index)
