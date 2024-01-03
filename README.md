@@ -4,7 +4,7 @@ Arrow.nvim is a plugin made to manage quick file bookmarks using a single UI.  Y
 key and have everything you need to get started.
 
 ![arrow.nvim](https://i.imgur.com/mPdSC5s.png)
-![arrow.nvim_gif]()
+![arrow.nvim_gif](https://i.imgur.com/LcvG406.gif)
 
 ## Installation
 
