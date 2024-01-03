@@ -8,8 +8,6 @@ local to_highlight = {}
 
 local current_index = 0
 
-local after_text = "zxcvbnmadfghjkl"
-
 local function getActionsMenu()
 	local mappings = config.getState("mappings")
 
@@ -98,7 +96,7 @@ local function renderBuffer(buffer)
 		local displayIndex = i
 
 		if i > 9 then
-			displayIndex = after_text:sub(i - 9, i - 9)
+			displayIndex = config.getState("after_9_keys"):sub(i - 9, i - 9)
 		end
 
 		if fileNames[i] == vim.b.filename then
@@ -112,7 +110,7 @@ local function renderBuffer(buffer)
 		end, { buffer = buf, noremap = false, silent = true })
 
 		if icons then
-			local icon, hl_group = get_file_icon(fileName)
+			local icon, hl_group = get_file_icon(fileNames[i])
 
 			to_highlight[i] = hl_group
 
@@ -217,7 +215,7 @@ local function render_highlights(buffer)
 	local pattern = " %. .-$"
 	local line_number = 1
 
-	while line_number <= #fileNames do
+	while line_number <= #fileNames + 1 do
 		local line_content = vim.api.nvim_buf_get_lines(menuBuf, line_number - 1, line_number, false)[1]
 
 		local match_start, match_end = string.find(line_content, pattern)
