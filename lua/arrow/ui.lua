@@ -11,6 +11,12 @@ local current_index = 0
 local function getActionsMenu()
 	local mappings = config.getState("mappings")
 
+	if #vim.g.arrow_filenames == 0 then
+		return {
+			string.format("%s Save File", mappings.toggle),
+		}
+	end
+
 	local already_saved = current_index > 0
 
 	local text
@@ -121,6 +127,10 @@ local function renderBuffer(buffer)
 	end
 
 	-- Add a separator
+	if #vim.g.arrow_filenames == 0 then
+		table.insert(lines, "   No files yet.")
+	end
+
 	table.insert(lines, "")
 
 	local actionsMenu = getActionsMenu()
@@ -171,7 +181,7 @@ local function render_highlights(buffer)
 		end
 	end
 
-	for i = #fileNames + 2, #fileNames + #actionsMenu + 2 do
+	for i = #fileNames + 3, #fileNames + #actionsMenu + 3 do
 		vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowAction", i - 1, 0, 4)
 	end
 
@@ -281,6 +291,13 @@ function M.openMenu()
 
 	local row = math.ceil((vim.o.lines - height) / 2)
 	local col = math.ceil((vim.o.columns - width) / 2)
+
+	local is_empty = #vim.g.arrow_filenames == 0
+
+	if is_empty then
+		height = 5
+		width = 18
+	end
 
 	local win = vim.api.nvim_open_win(menuBuf, true, {
 		relative = "editor",
