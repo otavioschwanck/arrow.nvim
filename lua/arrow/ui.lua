@@ -314,21 +314,22 @@ function M.openMenu()
 		border = "double",
 	})
 
-	vim.keymap.set("n", config.getState("leader_key"), closeMenu, { noremap = true, silent = true, buffer = menuBuf })
-	vim.keymap.set("n", mappings.quit, closeMenu, { noremap = true, silent = true, buffer = menuBuf })
+	local menuKeymapOpts = { noremap = true, silent = true, buffer = menuBuf, nowait = true }
+	vim.keymap.set("n", config.getState("leader_key"), closeMenu, menuKeymapOpts)
+	vim.keymap.set("n", mappings.quit, closeMenu, menuKeymapOpts)
 	vim.keymap.set("n", mappings.edit, function()
 		closeMenu()
 		persist.open_cache_file()
-	end, { noremap = true, silent = true, buffer = menuBuf })
+	end, menuKeymapOpts)
 	vim.keymap.set("n", mappings.toggle, function()
 		persist.toggle(filename)
 		closeMenu()
-	end, { noremap = true, silent = true, buffer = menuBuf })
+	end, menuKeymapOpts)
 	vim.keymap.set("n", mappings.clear_all_items, function()
 		persist.clear()
 		closeMenu()
-	end, { noremap = true, silent = true, buffer = menuBuf })
-	vim.keymap.set("n", "<Esc>", closeMenu, { noremap = true, silent = true, buffer = menuBuf })
+	end, menuKeymapOpts)
+	vim.keymap.set("n", "<Esc>", closeMenu, menuKeymapOpts)
 
 	vim.keymap.set("n", mappings.delete_mode, function()
 		if vim.b.arrow_current_mode == "delete_mode" then
@@ -339,7 +340,7 @@ function M.openMenu()
 
 		renderBuffer(menuBuf)
 		render_highlights(menuBuf)
-	end, { noremap = true, silent = true, buffer = menuBuf })
+	end, menuKeymapOpts)
 
 	vim.keymap.set("n", mappings.open_vertical, function()
 		if vim.b.arrow_current_mode == "vertical_mode" then
@@ -350,7 +351,7 @@ function M.openMenu()
 
 		renderBuffer(menuBuf)
 		render_highlights(menuBuf)
-	end, { noremap = true, silent = true, buffer = menuBuf })
+	end, menuKeymapOpts)
 
 	vim.keymap.set("n", mappings.open_horizontal, function()
 		if vim.b.arrow_current_mode == "horizontal_mode" then
@@ -361,7 +362,7 @@ function M.openMenu()
 
 		renderBuffer(menuBuf)
 		render_highlights(menuBuf)
-	end, { noremap = true, silent = true, buffer = menuBuf })
+	end, menuKeymapOpts)
 
 	local hl = vim.api.nvim_get_hl_by_name("Cursor", true)
 
