@@ -10,6 +10,8 @@ end
 local function cache_file_path()
 	local save_path = config.getState("save_path")()
 
+	save_path = save_path:gsub("/$", "")
+
 	if vim.fn.isdirectory(save_path) == 0 then
 		vim.fn.mkdir(save_path, "p")
 	end
