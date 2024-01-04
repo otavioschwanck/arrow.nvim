@@ -313,8 +313,11 @@ function M.openMenu()
 
 	local is_empty = #vim.g.arrow_filenames == 0
 
-	if is_empty then
+	if is_empty and show_handbook then
 		height = 5
+		width = 18
+	elseif is_empty then
+		height = 3
 		width = 18
 	end
 
