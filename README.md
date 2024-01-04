@@ -52,7 +52,7 @@ Just press the leader_key set on setup and follow you heart. (Is that easy)
 {
   show_icons = true,
   always_show_path = false,
-  hide_handbook = false,
+  hide_handbook = false, -- set to true to hide the shortcuts on menu.
   mappings = {
 		edit = "e",
 		delete_mode = "d",
