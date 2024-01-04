@@ -141,8 +141,10 @@ local function renderBuffer(buffer)
 	local actionsMenu = getActionsMenu()
 
 	-- Add actions to the menu
-	for _, action in ipairs(actionsMenu) do
-		table.insert(lines, "   " .. action)
+	if not (config.getState("hide_handbook")) then
+		for _, action in ipairs(actionsMenu) do
+			table.insert(lines, "   " .. action)
+		end
 	end
 
 	table.insert(lines, "")
@@ -280,9 +282,16 @@ function M.openMenu()
 	fileNames = vim.g.arrow_filenames
 	local filename = utils.get_path_for("%")
 
+	local show_handbook = not (config.getState("hide_handbook"))
+
 	local parsedFileNames = format_file_names(fileNames)
 
-	local max_width = 16
+	local max_width = 0
+
+	if show_handbook then
+		max_width = 13
+	end
+
 	for _, v in pairs(parsedFileNames) do
 		if #v > max_width then
 			max_width = #v
@@ -290,7 +299,12 @@ function M.openMenu()
 	end
 
 	local menuBuf = createMenuBuffer(filename)
-	local height = #fileNames + 10
+	local height = #fileNames + 2
+
+	if show_handbook then
+		height = height + 8
+	end
+
 	local width = max_width + 10
 	local mappings = config.getState("mappings")
 

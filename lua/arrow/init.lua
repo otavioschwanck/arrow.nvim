@@ -31,6 +31,7 @@ function M.setup(opts)
 	config.setState("always_show_path", opts.always_show_path or false)
 	config.setState("show_icons", opts.show_icons)
 	config.setState("after_9_keys", opts.after_9_keys or "zxcbnmZXVBNM,afghjklAFGHJKLwrtyuiopWRTYUIOP")
+	config.setState("hide_handbook", opts.hide_handbook or false)
 
 	config.setState("save_key", opts.save_key or function()
 		return vim.loop.cwd()
