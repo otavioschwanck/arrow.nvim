@@ -381,7 +381,9 @@ function M.openMenu()
 	local hl = vim.api.nvim_get_hl_by_name("Cursor", true)
 
 	hl.blend = 100
-	vim.api.nvim_set_hl(0, "Cursor", hl)
+
+	pcall(vim.api.nvim_set_hl, 0, "Cursor", hl)
+
 	vim.opt.guicursor:append("a:Cursor/lCursor")
 
 	vim.api.nvim_create_autocmd("BufLeave", {
