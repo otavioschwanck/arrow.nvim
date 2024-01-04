@@ -53,6 +53,9 @@ Just press the leader_key set on setup and follow you heart. (Is that easy)
   show_icons = true,
   always_show_path = false,
   hide_handbook = false, -- set to true to hide the shortcuts on menu.
+  save_path = function()
+    return vim.fn.stdpath("cache") -- if you want to concatenate arrow, do: return vim.fn.stdpath("cache") .. "/arrow/"
+  end,
   mappings = {
 		edit = "e",
 		delete_mode = "d",

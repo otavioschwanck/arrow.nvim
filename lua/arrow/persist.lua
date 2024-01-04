@@ -8,7 +8,13 @@ local function normalize_path_to_filename(path)
 end
 
 local function cache_file_path()
-	return vim.fn.stdpath("cache") .. normalize_path_to_filename(config.getState("save_key")())
+	local save_path = config.getState("save_path")()
+
+	if vim.fn.isdirectory(save_path) == 0 then
+		vim.fn.mkdir(save_path, "p")
+	end
+
+	return save_path .. normalize_path_to_filename(config.getState("save_key")())
 end
 
 vim.g.arrow_filenames = {}

@@ -27,6 +27,9 @@ function M.setup(opts)
 
 	local leader_key = opts.leader_key or ";"
 
+	config.setState("save_path", opts.save_path or function()
+		return vim.fn.stdpath("cache")
+	end)
 	config.setState("leader_key", leader_key)
 	config.setState("always_show_path", opts.always_show_path or false)
 	config.setState("show_icons", opts.show_icons)
