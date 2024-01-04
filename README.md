@@ -85,8 +85,8 @@ You can use `require('arrow.statusline')` to access the statusline helpers:
 ```lua
 local statusline = require('arrow.statusline')
 statusline.is_on_arrow_file() -- return nil if current file is not on arrow.  Return the index if it is.
-statuline.text_for_statusline() -- return the text to be shown in the statusline (the index if is on arrow or "" if not)
-statuline.text_for_statusline_with_icons() -- Same, but with an bow and arrow icon ;D
+statusline.text_for_statusline() -- return the text to be shown in the statusline (the index if is on arrow or "" if not)
+statusline.text_for_statusline_with_icons() -- Same, but with an bow and arrow icon ;D
 ```
 
 ![statusline](https://i.imgur.com/v7Rvagj.png)
