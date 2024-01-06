@@ -115,6 +115,14 @@ function M.setup(opts)
 	config.setState("full_path_list", utils.join_two_arrays(default_full_path_list, opts.full_path_list or {}))
 
 	persist.load_cache_file()
+
+	vim.api.nvim_create_augroup("arrow", { clear = true })
+
+	vim.api.nvim_create_autocmd({ "DirChanged" }, {
+		callback = persist.load_cache_file,
+		desc = "load cache file on DirChanged",
+		group = "arrow",
+	})
 end
 
 return M
