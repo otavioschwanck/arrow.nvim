@@ -110,9 +110,13 @@ local function renderBuffer(buffer)
 			displayIndex = config.getState("after_9_keys"):sub(i - 9, i - 9)
 		end
 
-		if fileNames[i] == vim.b.filename then
-			vim.api.nvim_buf_add_highlight(buf, -1, "ArrowDeleteMode", i + 3, 0, -1)
+		vim.api.nvim_buf_add_highlight(buf, -1, "ArrowDeleteMode", i + 3, 0, -1)
 
+		if fileNames[i]:sub(1, 2) == "./" then
+			fileNames[i] = fileNames[i]:sub(3)
+		end
+
+		if fileNames[i] == vim.b.filename then
 			current_index = i
 		end
 
