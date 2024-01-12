@@ -112,11 +112,13 @@ local function renderBuffer(buffer)
 
 		vim.api.nvim_buf_add_highlight(buf, -1, "ArrowDeleteMode", i + 3, 0, -1)
 
+		local parsed_filename = fileNames[i]
+
 		if fileNames[i]:sub(1, 2) == "./" then
-			fileNames[i] = fileNames[i]:sub(3)
+			parsed_filename = fileNames[i]:sub(3)
 		end
 
-		if fileNames[i] == vim.b.filename then
+		if parsed_filename == vim.b.filename then
 			current_index = i
 		end
 
