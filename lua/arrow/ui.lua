@@ -106,9 +106,7 @@ local function renderBuffer(buffer)
 	for i, fileName in ipairs(formattedFleNames) do
 		local displayIndex = i
 
-		if i > 9 then
-			displayIndex = config.getState("after_9_keys"):sub(i - 9, i - 9)
-		end
+		displayIndex = config.getState("index_keys"):sub(i, i)
 
 		vim.api.nvim_buf_add_highlight(buf, -1, "ArrowDeleteMode", i + 3, 0, -1)
 
