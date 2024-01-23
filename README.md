@@ -66,7 +66,7 @@ Just press the leader_key set on setup and follow you heart. (Is that easy)
 		quit = "q",
   },
   leader_key = ";",
-  after_9_keys = "zxcbnmZXVBNM,afghjklAFGHJKLwrtyuiopWRTYUIOP", -- Please, don't pin more than 9 XD,
+  index_keys = "123456789zxcbnmZXVBNM,afghjklAFGHJKLwrtyuiopWRTYUIOP", -- keys mapped to bookmark index, i.e. 1st bookmark will be accessible by 1, and 12th - by c
   save_key = function()
     return vim.loop.cwd() -- we use the cwd as the context from the bookmarks.  You can change it for anything you want.
   end,

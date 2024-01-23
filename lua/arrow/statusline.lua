@@ -8,7 +8,7 @@ local function show_right_index(index)
 	if index < 10 then
 		return index
 	else
-		return config.getState("after_9_keys"):sub(index - 9, index - 9)
+		return config.getState("index_keys"):sub(index, index)
 	end
 end
 
