@@ -5,11 +5,7 @@ local config = require("arrow.config")
 local utils = require("arrow.utils")
 
 local function show_right_index(index)
-	if index < 10 then
-		return index
-	else
-		return config.getState("index_keys"):sub(index, index)
-	end
+	return config.getState("index_keys"):sub(index, index)
 end
 
 function M.in_on_arrow_file()
