@@ -67,6 +67,7 @@ Just press the leader_key set on setup and follow you heart. (Is that easy)
 		quit = "q",
   },
   leader_key = ";",
+  global_bookmarks = false, -- if true, arrow will save files globally (ignores save_key and separate_by_branch)
   index_keys = "123456789zxcbnmZXVBNM,afghjklAFGHJKLwrtyuiopWRTYUIOP", -- keys mapped to bookmark index, i.e. 1st bookmark will be accessible by 1, and 12th - by c
   save_key = function()
     return vim.loop.cwd() -- we use the cwd as the context from the bookmarks.  You can change it for anything you want.

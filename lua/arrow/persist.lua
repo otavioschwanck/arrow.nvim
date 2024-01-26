@@ -9,6 +9,10 @@ local function normalize_path_to_filename(path)
 end
 
 local function save_key()
+	if config.getState("global_bookmarks") == true then
+		return "global"
+	end
+
 	if config.getState("separate_by_branch") then
 		local branch = git.refresh_git_branch()
 

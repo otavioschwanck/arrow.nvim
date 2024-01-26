@@ -9,7 +9,15 @@ local function show_right_index(index)
 end
 
 function M.in_on_arrow_file()
-	return persist.is_saved(utils.get_path_for("%"))
+	local filename
+
+	if config.getState("global_bookmarks") == true then
+		filename = vim.fn.expand("%:p")
+	else
+		filename = utils.get_path_for("%")
+	end
+
+	return persist.is_saved(filename)
 end
 
 function M.text_for_statusline()

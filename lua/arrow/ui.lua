@@ -287,7 +287,13 @@ function M.openMenu()
 
 	to_highlight = {}
 	fileNames = vim.g.arrow_filenames
-	local filename = utils.get_path_for("%")
+	local filename
+
+	if config.getState("global_bookmarks") == true then
+		filename = vim.fn.expand("%:p")
+	else
+		filename = utils.get_path_for("%")
+	end
 
 	local show_handbook = not (config.getState("hide_handbook"))
 
