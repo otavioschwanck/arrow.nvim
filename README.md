@@ -52,6 +52,7 @@ Just press the leader_key set on setup and follow you heart. (Is that easy)
 {
   show_icons = true,
   always_show_path = false,
+  separate_by_branch = false, -- Add the branch name to the save_key result
   hide_handbook = false, -- set to true to hide the shortcuts on menu.
   save_path = function()
     return vim.fn.stdpath("cache") .. "/arrow"

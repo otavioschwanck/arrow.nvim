@@ -35,6 +35,7 @@ function M.setup(opts)
 	config.setState("show_icons", opts.show_icons)
 	config.setState("index_keys", opts.index_keys or "123456789zxcbnmZXVBNM,afghjklAFGHJKLwrtyuiopWRTYUIOP")
 	config.setState("hide_handbook", opts.hide_handbook or false)
+	config.setState("separate_by_branch", opts.separate_by_branch or false)
 
 	config.setState("save_key", opts.save_key or function()
 		return vim.loop.cwd()

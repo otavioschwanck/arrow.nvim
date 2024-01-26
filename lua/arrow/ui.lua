@@ -3,6 +3,7 @@ local M = {}
 local config = require("arrow.config")
 local persist = require("arrow.persist")
 local utils = require("arrow.utils")
+local git = require("arrow.git")
 
 local fileNames = {}
 local to_highlight = {}
@@ -282,6 +283,8 @@ function M.openFile(fileNumber)
 end
 
 function M.openMenu()
+	git.refresh_git_branch()
+
 	to_highlight = {}
 	fileNames = vim.g.arrow_filenames
 	local filename = utils.get_path_for("%")

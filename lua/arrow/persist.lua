@@ -2,9 +2,22 @@ local M = {}
 
 local config = require("arrow.config")
 local utils = require("arrow.utils")
+local git = require("arrow.git")
 
 local function normalize_path_to_filename(path)
 	return path:gsub("/", "_")
+end
+
+local function save_key()
+	if config.getState("separate_by_branch") then
+		local branch = git.refresh_git_branch()
+
+		if branch then
+			return normalize_path_to_filename(config.getState("save_key")() .. "-" .. branch)
+		end
+	end
+
+	return normalize_path_to_filename(config.getState("save_key")())
 end
 
 local function cache_file_path()
@@ -16,7 +29,7 @@ local function cache_file_path()
 		vim.fn.mkdir(save_path, "p")
 	end
 
-	return save_path .. "/" .. normalize_path_to_filename(config.getState("save_key")())
+	return save_path .. "/" .. save_key()
 end
 
 vim.g.arrow_filenames = {}
@@ -45,6 +58,8 @@ function M.remove(filename)
 end
 
 function M.toggle(filename)
+	git.refresh_git_branch()
+
 	filename = filename or utils.get_path_for("%")
 
 	local index = M.is_saved(filename)
@@ -94,6 +109,8 @@ function M.go_to(index)
 end
 
 function M.next()
+	git.refresh_git_branch()
+
 	local current_index = M.is_saved(utils.get_path_for("%"))
 	local next_index
 
@@ -107,6 +124,8 @@ function M.next()
 end
 
 function M.previous()
+	git.refresh_git_branch()
+
 	local current_index = M.is_saved(utils.get_path_for("%"))
 	local previous_index
 
@@ -122,6 +141,8 @@ function M.previous()
 end
 
 function M.open_cache_file()
+	git.refresh_git_branch()
+
 	local cache_path = cache_file_path()
 	local cache_content = vim.fn.readfile(cache_path)
 
