@@ -123,7 +123,7 @@ function M.setup(opts)
 
 	vim.api.nvim_create_autocmd({ "DirChanged", "SessionLoadPost" }, {
 		callback = function()
-			git.get_git_branch()
+			git.refresh_git_branch()
 			persist.load_cache_file()
 		end,
 		desc = "load cache file on DirChanged",
