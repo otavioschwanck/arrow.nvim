@@ -4,6 +4,7 @@ local config = require("arrow.config")
 local utils = require("arrow.utils")
 local ui = require("arrow.ui")
 local persist = require("arrow.persist")
+local git = require("arrow.git")
 
 M.config = {}
 
@@ -121,7 +122,10 @@ function M.setup(opts)
 	vim.api.nvim_create_augroup("arrow", { clear = true })
 
 	vim.api.nvim_create_autocmd({ "DirChanged", "SessionLoadPost" }, {
-		callback = persist.load_cache_file,
+		callback = function()
+			git.get_git_branch()
+			persist.load_cache_file()
+		end,
 		desc = "load cache file on DirChanged",
 		group = "arrow",
 	})
