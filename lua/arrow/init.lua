@@ -120,7 +120,7 @@ function M.setup(opts)
 
 	vim.api.nvim_create_augroup("arrow", { clear = true })
 
-	vim.api.nvim_create_autocmd({ "DirChanged" }, {
+	vim.api.nvim_create_autocmd({ "DirChanged", "SessionLoadPost" }, {
 		callback = persist.load_cache_file,
 		desc = "load cache file on DirChanged",
 		group = "arrow",
