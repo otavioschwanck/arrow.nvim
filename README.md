@@ -101,5 +101,16 @@ statusline.text_for_statusline_with_icons() -- Same, but with an bow and arrow i
 - ArrowAction
 - ArrowDeleteMode
 
+## Working with sessions plugins
+
+If you have any error using arrow with a session plugin, like on mini.sessions, add this to the post load session hook:
+
+```lua
+require("arrow.git").refresh_git_branch() -- only if separated_by_branch is true
+require("arrow.persist").load_cache_file()
+```
+
+Obs: persistence.nvim works fine with arrow.
+
 ### Do you like my work?  Please, buy me a coffee
 https://www.buymeacoffee.com/otavioschwanck
