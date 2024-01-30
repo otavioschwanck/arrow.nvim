@@ -285,6 +285,10 @@ end
 function M.openMenu()
 	git.refresh_git_branch()
 
+	if vim.g.arrow_filenames == 0 then
+		persist.load_cache_file()
+	end
+
 	to_highlight = {}
 	fileNames = vim.g.arrow_filenames
 	local filename
