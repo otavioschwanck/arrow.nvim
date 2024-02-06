@@ -21,16 +21,9 @@ local function getActionsMenu()
 
 	local already_saved = current_index > 0
 
-	local text
+	local separate_save_and_remove = config.getState("separate_save_and_remove")
 
-	if already_saved == true then
-		text = string.format("%s Remove Current", mappings.toggle)
-	else
-		text = string.format("%s Save Current File", mappings.toggle)
-	end
-
-	return {
-		string.format(text, mappings.toggle),
+	local return_mappings = {
 		string.format("%s Edit Arrow File", mappings.edit),
 		string.format("%s Clear All Items", mappings.clear_all_items),
 		string.format("%s Delete mode", mappings.delete_mode),
@@ -38,6 +31,19 @@ local function getActionsMenu()
 		string.format("%s Open Horizontal", mappings.open_horizontal),
 		string.format("%s Quit", mappings.quit),
 	}
+
+	if separate_save_and_remove then
+		table.insert(return_mappings, 1, string.format("%s Remove Current File", mappings.remove))
+		table.insert(return_mappings, 1, string.format("%s Save Current File", mappings.toggle))
+	else
+		if already_saved == true then
+			table.insert(return_mappings, 1, string.format("%s Remove Current File", mappings.toggle))
+		else
+			table.insert(return_mappings, 1, string.format("%s Save Current File", mappings.toggle))
+		end
+	end
+
+	return return_mappings
 end
 
 local function format_file_names(file_names)
@@ -320,6 +326,10 @@ function M.openMenu()
 
 	if show_handbook then
 		height = height + 8
+
+		if config.getState("separate_save_and_remove") then
+			height = height + 1
+		end
 	end
 
 	local width = max_width + 10
@@ -348,6 +358,8 @@ function M.openMenu()
 		border = "double",
 	})
 
+	local separate_save_and_remove = config.getState("separate_save_and_remove")
+
 	local menuKeymapOpts = { noremap = true, silent = true, buffer = menuBuf, nowait = true }
 	vim.keymap.set("n", config.getState("leader_key"), closeMenu, menuKeymapOpts)
 	vim.keymap.set("n", mappings.quit, closeMenu, menuKeymapOpts)
@@ -355,10 +367,28 @@ function M.openMenu()
 		closeMenu()
 		persist.open_cache_file()
 	end, menuKeymapOpts)
-	vim.keymap.set("n", mappings.toggle, function()
-		persist.toggle(filename)
-		closeMenu()
-	end, menuKeymapOpts)
+
+	if separate_save_and_remove then
+		vim.keymap.set("n", mappings.toggle, function()
+			filename = filename or utils.get_path_for("%")
+
+			persist.save(filename)
+			closeMenu()
+		end, menuKeymapOpts)
+
+		vim.keymap.set("n", mappings.remove, function()
+			filename = filename or utils.get_path_for("%")
+
+			persist.remove(filename)
+			closeMenu()
+		end, menuKeymapOpts)
+	else
+		vim.keymap.set("n", mappings.toggle, function()
+			persist.toggle(filename)
+			closeMenu()
+		end, menuKeymapOpts)
+	end
+
 	vim.keymap.set("n", mappings.clear_all_items, function()
 		persist.clear()
 		closeMenu()

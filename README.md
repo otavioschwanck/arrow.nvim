@@ -61,11 +61,13 @@ Just press the leader_key set on setup and follow you heart. (Is that easy)
 		edit = "e",
 		delete_mode = "d",
 		clear_all_items = "C",
-		toggle = "s",
+		toggle = "s", -- used as save if separate_save_and_remove is true
 		open_vertical = "v",
 		open_horizontal = "-",
 		quit = "q",
+    remove = "x", -- only used if separate_save_and_remove is true
   },
+  separate_save_and_remove = false, -- if true, will remove the toggle and create the save/remove keymaps.
   leader_key = ";",
   global_bookmarks = false, -- if true, arrow will save files globally (ignores separate_by_branch)
   index_keys = "123456789zxcbnmZXVBNM,afghjklAFGHJKLwrtyuiopWRTYUIOP", -- keys mapped to bookmark index, i.e. 1st bookmark will be accessible by 1, and 12th - by c

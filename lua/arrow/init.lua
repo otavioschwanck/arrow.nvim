@@ -24,6 +24,7 @@ function M.setup(opts)
 		open_vertical = "v",
 		open_horizontal = "-",
 		quit = "q",
+		remove = "x",
 	}
 
 	local leader_key = opts.leader_key or ";"
@@ -34,10 +35,11 @@ function M.setup(opts)
 	config.setState("leader_key", leader_key)
 	config.setState("always_show_path", opts.always_show_path or false)
 	config.setState("show_icons", opts.show_icons)
-	config.setState("index_keys", opts.index_keys or "123456789zxcbnmZXVBNM,afghjklAFGHJKLwrtyuiopWRTYUIOP")
+	config.setState("index_keys", opts.index_keys or "123456789zcbnmZXVBNM,afghjklAFGHJKLwrtyuiopWRTYUIOP")
 	config.setState("hide_handbook", opts.hide_handbook or false)
 	config.setState("separate_by_branch", opts.separate_by_branch or false)
 	config.setState("global_bookmarks", opts.global_bookmarks or false)
+	config.setState("separate_save_and_remove", opts.separate_save_and_remove or false)
 
 	config.setState("save_key", opts.save_key or function()
 		return vim.loop.cwd()
