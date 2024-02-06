@@ -256,7 +256,7 @@ local function render_highlights(buffer)
 end
 
 -- Function to open the selected file
-function M.openFile(fileNumber)
+function M.openFile(fileNumber, previousFile)
 	local fileName = fileNames[fileNumber]
 
 	if vim.b.arrow_current_mode == "delete_mode" then
@@ -275,16 +275,16 @@ function M.openFile(fileNumber)
 		local action
 
 		if vim.b.arrow_current_mode == "" or not vim.b.arrow_current_mode then
-			action = ":edit %s"
+			action = config.getState("open_action")
 		elseif vim.b.arrow_current_mode == "vertical_mode" then
-			action = ":vsplit %s"
+			action = config.getState("vertical_action")
 		elseif vim.b.arrow_current_mode == "horizontal_mode" then
-			action = ":split %s"
+			action = config.getState("horizontal_action")
 		end
 
 		closeMenu()
 
-		vim.cmd(string.format(action, fileName))
+		action(fileName, vim.b.filename)
 	end
 end
 

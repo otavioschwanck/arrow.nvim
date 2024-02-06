@@ -29,6 +29,20 @@ function M.setup(opts)
 
 	local leader_key = opts.leader_key or ";"
 
+	local actions = opts.custom_actions or {}
+
+	config.setState("open_action", actions.open or function(filename, _)
+		vim.cmd(string.format(":edit %s", filename))
+	end)
+
+	config.setState("vertical_action", actions.split_vertical or function(filename, _)
+		vim.cmd(string.format(":vsplit %s", filename))
+	end)
+
+	config.setState("horizontal_action", actions.split_horizontal or function(filename, _)
+		vim.cmd(string.format(":split %s", filename))
+	end)
+
 	config.setState("save_path", opts.save_path or function()
 		return vim.fn.stdpath("cache") .. "/arrow"
 	end)

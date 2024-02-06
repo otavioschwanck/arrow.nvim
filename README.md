@@ -58,14 +58,19 @@ Just press the leader_key set on setup and follow you heart. (Is that easy)
     return vim.fn.stdpath("cache") .. "/arrow"
   end,
   mappings = {
-		edit = "e",
-		delete_mode = "d",
-		clear_all_items = "C",
-		toggle = "s", -- used as save if separate_save_and_remove is true
-		open_vertical = "v",
-		open_horizontal = "-",
-		quit = "q",
+    edit = "e",
+    delete_mode = "d",
+    clear_all_items = "C",
+    toggle = "s", -- used as save if separate_save_and_remove is true
+    open_vertical = "v",
+    open_horizontal = "-",
+    quit = "q",
     remove = "x", -- only used if separate_save_and_remove is true
+  },
+  custom_actions = {
+    open = function(target_file_name, current_file_name) end, -- target_file_name = file selected to be open, current_file_name = filename from where this was called
+    split_vertical = function(target_file_name, current_file_name) end,
+    split_horizontal = function(target_file_name, current_file_name) end,
   },
   separate_save_and_remove = false, -- if true, will remove the toggle and create the save/remove keymaps.
   leader_key = ";",
