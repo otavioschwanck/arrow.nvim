@@ -1,6 +1,6 @@
 # arrow.nvim
 
-Arrow.nvim is a plugin made to manage quick file bookmarks using a single UI.  You can just map one
+Arrow.nvim is a plugin made to manage quick file bookmarks using a single UI. You can just map one
 key and have everything you need to get started.
 
 ![arrow.nvim](https://i.imgur.com/mPdSC5s.png)
@@ -72,6 +72,13 @@ Just press the leader_key set on setup and follow you heart. (Is that easy)
     split_vertical = function(target_file_name, current_file_name) end,
     split_horizontal = function(target_file_name, current_file_name) end,
   },
+  window = { -- controls the appearance and position of an arrow window (see nvim_open_win() for all options)
+    width = "auto",
+    height = "auto",
+    row = "auto",
+    col = "auto",
+    border = "double",
+  }
   separate_save_and_remove = false, -- if true, will remove the toggle and create the save/remove keymaps.
   leader_key = ";",
   global_bookmarks = false, -- if true, arrow will save files globally (ignores separate_by_branch)
@@ -119,5 +126,6 @@ require("arrow.persist").load_cache_file()
 
 Obs: persistence.nvim works fine with arrow.
 
-### Do you like my work?  Please, buy me a coffee
+### Do you like my work? Please, buy me a coffee
+
 https://www.buymeacoffee.com/otavioschwanck

@@ -288,6 +288,68 @@ function M.openFile(fileNumber, previousFile)
 	end
 end
 
+function M.getWindowConfig()
+	local show_handbook = not (config.getState("hide_handbook"))
+	local parsedFileNames = format_file_names(fileNames)
+	local separate_save_and_remove = config.getState("separate_save_and_remove")
+
+	local max_width = 0
+	if show_handbook then
+		max_width = 13
+		if separate_save_and_remove then
+			max_width = max_width + 2
+		end
+	end
+	for _, v in pairs(parsedFileNames) do
+		if #v > max_width then
+			max_width = #v
+		end
+	end
+
+	local width = max_width + 10
+	local height = #fileNames + 2
+
+	if show_handbook then
+		height = height + 8
+		if separate_save_and_remove then
+			height = height + 1
+		end
+	end
+
+	local current_config = {
+		width = width,
+		height = height,
+		row = math.ceil((vim.o.lines - height) / 2),
+		col = math.ceil((vim.o.columns - width) / 2),
+	}
+
+	local is_empty = #vim.g.arrow_filenames == 0
+	if is_empty and show_handbook then
+		current_config.height = 5
+		current_config.width = 18
+	elseif is_empty then
+		current_config.height = 3
+		current_config.width = 18
+	end
+
+	local res = vim.tbl_deep_extend("force", current_config, config.getState("window"))
+
+	if res.width == "auto" then
+		res.width = current_config.width
+	end
+	if res.height == "auto" then
+		res.height = current_config.height
+	end
+	if res.row == "auto" then
+		res.row = current_config.row
+	end
+	if res.col == "auto" then
+		res.col = current_config.col
+	end
+
+	return res
+end
+
 function M.openMenu()
 	git.refresh_git_branch()
 
@@ -305,58 +367,13 @@ function M.openMenu()
 		filename = utils.get_path_for("%")
 	end
 
-	local show_handbook = not (config.getState("hide_handbook"))
-
-	local parsedFileNames = format_file_names(fileNames)
-
-	local max_width = 0
-
-	if show_handbook then
-		max_width = 13
-	end
-
-	for _, v in pairs(parsedFileNames) do
-		if #v > max_width then
-			max_width = #v
-		end
-	end
-
 	local menuBuf = createMenuBuffer(filename)
-	local height = #fileNames + 2
 
-	if show_handbook then
-		height = height + 8
+	local window_config = M.getWindowConfig()
 
-		if config.getState("separate_save_and_remove") then
-			height = height + 1
-		end
-	end
+	local win = vim.api.nvim_open_win(menuBuf, true, window_config)
 
-	local width = max_width + 10
 	local mappings = config.getState("mappings")
-
-	local row = math.ceil((vim.o.lines - height) / 2)
-	local col = math.ceil((vim.o.columns - width) / 2)
-
-	local is_empty = #vim.g.arrow_filenames == 0
-
-	if is_empty and show_handbook then
-		height = 5
-		width = 18
-	elseif is_empty then
-		height = 3
-		width = 18
-	end
-
-	local win = vim.api.nvim_open_win(menuBuf, true, {
-		relative = "editor",
-		width = width,
-		height = height,
-		row = row,
-		col = col,
-		style = "minimal",
-		border = "double",
-	})
 
 	local separate_save_and_remove = config.getState("separate_save_and_remove")
 

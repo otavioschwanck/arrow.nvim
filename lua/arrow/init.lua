@@ -27,6 +27,18 @@ function M.setup(opts)
 		remove = "x",
 	}
 
+	local default_window_config = {
+		relative = "editor",
+		width = "auto",
+		height = "auto",
+		row = "auto",
+		col = "auto",
+		style = "minimal",
+		border = "double",
+	}
+
+	config.setState("window", utils.join_two_keys_tables(default_window_config, opts.window or {}))
+
 	local leader_key = opts.leader_key or ";"
 
 	local actions = opts.custom_actions or {}
