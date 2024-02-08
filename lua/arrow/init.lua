@@ -34,7 +34,7 @@ function M.setup(opts)
 		row = "auto",
 		col = "auto",
 		style = "minimal",
-		border = "double",
+		border = "single",
 	}
 
 	config.setState("window", utils.join_two_keys_tables(default_window_config, opts.window or {}))
