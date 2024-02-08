@@ -67,7 +67,9 @@ local function format_file_names(file_names)
 		local tail = vim.fn.fnamemodify(full_path, ":t:r")
 		local tail_with_extension = vim.fn.fnamemodify(full_path, ":t")
 
-		if
+		if vim.fn.isdirectory(full_path) == 1 then
+			table.insert(formatted_names, full_path)
+		elseif
 			not (config.getState("always_show_path"))
 			and #name_occurrences[tail] == 1
 			and not (vim.tbl_contains(full_path_list, tail))
@@ -95,6 +97,10 @@ local function closeMenu()
 end
 
 local function get_file_icon(file_name)
+	if vim.fn.isdirectory(file_name) == 1 then
+		return "", "Normal"
+	end
+
 	local webdevicons = require("nvim-web-devicons")
 	local extension = vim.fn.fnamemodify(file_name, ":e")
 	local icon, hl_group = webdevicons.get_icon(file_name, extension, { default = true })
