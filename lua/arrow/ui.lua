@@ -85,7 +85,12 @@ local function format_file_names(file_names)
 		local tail_with_extension = vim.fn.fnamemodify(full_path, ":t")
 
 		if vim.fn.isdirectory(full_path) == 1 then
+			if not (string.sub(full_path, #full_path, #full_path) == "/") then
+				full_path = full_path .. "/"
+			end
+
 			local path = vim.fn.fnamemodify(full_path, ":h")
+
 			local display_path = path
 
 			local splitted_path = vim.split(display_path, "/")
@@ -102,9 +107,9 @@ local function format_file_names(file_names)
 				end
 			else
 				if config.getState("always_show_path") then
-					table.insert(formatted_names, full_path .. "/ . /")
+					table.insert(formatted_names, full_path .. " . /")
 				else
-					table.insert(formatted_names, full_path .. "/")
+					table.insert(formatted_names, full_path)
 				end
 			end
 		elseif
