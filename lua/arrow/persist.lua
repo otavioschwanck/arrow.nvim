@@ -90,7 +90,15 @@ function M.is_saved(filename)
 end
 
 function M.load_cache_file()
-	local success, data = pcall(vim.fn.readfile, cache_file_path())
+	local cache_path = cache_file_path()
+
+	if vim.fn.filereadable(cache_path) == 0 then
+		vim.g.arrow_filenames = {}
+
+		return
+	end
+
+	local success, data = pcall(vim.fn.readfile, cache_path)
 	if success then
 		vim.g.arrow_filenames = data
 	else

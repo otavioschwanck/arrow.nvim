@@ -56,10 +56,27 @@ local function format_file_names(file_names)
 	for _, full_path in ipairs(file_names) do
 		local tail = vim.fn.fnamemodify(full_path, ":t:r") -- Get the file name without extension
 
-		if not name_occurrences[tail] then
-			name_occurrences[tail] = { full_path }
+		if vim.fn.isdirectory(full_path) == 1 then
+			local parsed_path = full_path
+
+			if parsed_path:sub(#parsed_path, #parsed_path) == "/" then
+				parsed_path = parsed_path:sub(1, #parsed_path - 1)
+			end
+
+			local splitted_path = vim.split(parsed_path, "/")
+			local folder_name = splitted_path[#splitted_path]
+
+			if name_occurrences[folder_name] then
+				table.insert(name_occurrences[folder_name], full_path)
+			else
+				name_occurrences[folder_name] = { full_path }
+			end
 		else
-			table.insert(name_occurrences[tail], full_path)
+			if not name_occurrences[tail] then
+				name_occurrences[tail] = { full_path }
+			else
+				table.insert(name_occurrences[tail], full_path)
+			end
 		end
 	end
 
@@ -68,7 +85,28 @@ local function format_file_names(file_names)
 		local tail_with_extension = vim.fn.fnamemodify(full_path, ":t")
 
 		if vim.fn.isdirectory(full_path) == 1 then
-			table.insert(formatted_names, full_path)
+			local path = vim.fn.fnamemodify(full_path, ":h")
+			local display_path = path
+
+			local splitted_path = vim.split(display_path, "/")
+
+			if #splitted_path > 1 then
+				local folder_name = splitted_path[#splitted_path]
+
+				local location = vim.fn.fnamemodify(full_path, ":h:h")
+
+				if #name_occurrences[folder_name] > 1 or config.getState("always_show_path") then
+					table.insert(formatted_names, string.format("%s . %s", folder_name .. "/", location))
+				else
+					table.insert(formatted_names, string.format("%s", folder_name .. "/"))
+				end
+			else
+				if config.getState("always_show_path") then
+					table.insert(formatted_names, full_path .. "/ . /")
+				else
+					table.insert(formatted_names, full_path .. "/")
+				end
+			end
 		elseif
 			not (config.getState("always_show_path"))
 			and #name_occurrences[tail] == 1
