@@ -5,6 +5,9 @@ local utils = require("arrow.utils")
 local git = require("arrow.git")
 
 local function normalize_path_to_filename(path)
+	if vim.fn.has("win32") then
+		path = path:gsub("\\", "/")
+	end
 	return path:gsub("/", "_")
 end
 

@@ -495,23 +495,26 @@ function M.openMenu()
 	end, menuKeymapOpts)
 
 	local hl = vim.api.nvim_get_hl_by_name("Cursor", true)
-
 	hl.blend = 100
 
-	pcall(vim.api.nvim_set_hl, 0, "Cursor", hl)
-
 	vim.opt.guicursor:append("a:Cursor/lCursor")
+	vim.api.nvim_set_hl(0, "Cursor", hl)
 
 	vim.api.nvim_create_autocmd("BufLeave", {
 		buffer = 0,
 		desc = "Disable Cursor",
 		callback = function()
-			local old_hl = vim.api.nvim_get_hl_by_name("Cursor", true)
-
 			current_index = 0
-			old_hl.blend = 0
-			vim.api.nvim_set_hl(0, "Cursor", old_hl)
-			vim.opt.guicursor:remove("a:Cursor/lCursor")
+
+			vim.cmd("highlight clear Cursor")
+
+			vim.schedule(function()
+				local old_hl = hl
+				old_hl.blend = 0
+				vim.api.nvim_set_hl(0, "Cursor", old_hl)
+
+				vim.opt.guicursor:remove("a:Cursor/lCursor")
+			end)
 		end,
 	})
 
