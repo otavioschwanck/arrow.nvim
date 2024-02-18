@@ -66,7 +66,6 @@ function M.setup(opts)
 	config.setState("separate_by_branch", opts.separate_by_branch or false)
 	config.setState("global_bookmarks", opts.global_bookmarks or false)
 	config.setState("separate_save_and_remove", opts.separate_save_and_remove or false)
-	config.setState("fix_cursor", opts.fix_cursor or false)
 
 	config.setState("save_key", opts.save_key or function()
 		return vim.loop.cwd()
