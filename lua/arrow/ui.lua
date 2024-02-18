@@ -137,7 +137,6 @@ end
 local function closeMenu()
 	local win = vim.fn.win_getid()
 	vim.api.nvim_win_close(win, true)
-	-- FIX: Return cursor position
 end
 
 local function get_file_icon(file_name)
