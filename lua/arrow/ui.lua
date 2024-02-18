@@ -498,7 +498,7 @@ function M.openMenu()
 	hl.blend = 100
 
 	vim.opt.guicursor:append("a:Cursor/lCursor")
-	vim.api.nvim_set_hl(0, "Cursor", { fg = "#000000", bg = "#000000", blend = 100 })
+	vim.api.nvim_set_hl(0, "Cursor", hl)
 
 	vim.api.nvim_create_autocmd("BufLeave", {
 		buffer = 0,
@@ -511,7 +511,6 @@ function M.openMenu()
 			vim.schedule(function()
 				local old_hl = hl
 				old_hl.blend = 0
-				vim.print("old_hl", old_hl)
 				vim.api.nvim_set_hl(0, "Cursor", old_hl)
 
 				vim.opt.guicursor:remove("a:Cursor/lCursor")
