@@ -137,7 +137,6 @@ end
 local function closeMenu()
 	local win = vim.fn.win_getid()
 	vim.api.nvim_win_close(win, true)
-	-- FIX: Return cursor position
 end
 
 local function get_file_icon(file_name)
@@ -508,6 +507,13 @@ function M.openMenu()
 		desc = "Disable Cursor",
 		callback = function()
 			local old_hl = vim.api.nvim_get_hl_by_name("Cursor", true)
+
+			-- FIX: Find less obstructive way to restore cursor
+			if config.getState("fix_cursor") then
+				vim.api.nvim_feedkeys(":", "n", true)
+				local key = vim.api.nvim_replace_termcodes("<Esc>", true, false, true)
+				vim.api.nvim_feedkeys(key, "n", true)
+			end
 
 			current_index = 0
 			old_hl.blend = 0
