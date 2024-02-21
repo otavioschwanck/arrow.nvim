@@ -159,7 +159,13 @@ function M.open_cache_file()
 	git.refresh_git_branch()
 
 	local cache_path = cache_file_path()
-	local cache_content = vim.fn.readfile(cache_path)
+	local cache_content
+
+	if vim.fn.filereadable(cache_path) == 0 then
+		cache_content = {}
+	else
+		cache_content = vim.fn.readfile(cache_path)
+	end
 
 	local bufnr = vim.api.nvim_create_buf(false, true)
 
