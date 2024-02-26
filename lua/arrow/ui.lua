@@ -355,7 +355,7 @@ function M.getWindowConfig()
 		end
 	end
 
-	local width = max_width + 10
+	local width = max_width + 12
 	local height = #fileNames + 2
 
 	if show_handbook then
