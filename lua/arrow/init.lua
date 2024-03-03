@@ -5,7 +5,7 @@ local utils = require("arrow.utils")
 local ui = require("arrow.ui")
 local persist = require("arrow.persist")
 local git = require("arrow.git")
-
+local commands = require("arrow.commands")
 M.config = {}
 
 function M.setup(opts)
@@ -157,6 +157,8 @@ function M.setup(opts)
 		desc = "load cache file on DirChanged",
 		group = "arrow",
 	})
+
+  commands.setup()
 end
 
 return M
