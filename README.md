@@ -126,49 +126,6 @@ require("arrow.persist").load_cache_file()
 
 Obs: persistence.nvim works fine with arrow.
 
-## Commands Module
-
-### Overview
-
-The `commands` module in Arrow is designed to facilitate custom command creation and handling within Neovim. It provides a simple yet powerful interface for defining and executing commands, leveraging Neovim's API and Arrow's custom UI components.
-
-### Defining Commands
-
-Commands are defined in the M.commands table. Each command is a key-value pair where the key is the command's name, and the value is a function that encapsulates the command's logic.
-
-```lua
-M.commands = {
-  open = function ()
-    ui.openMenu()
-  end,
-}
-```
-### Executing commands
-
-```lua
-:Arrow open
-```
-This would invoke the `open` command defined earlier, executing its associated function.
-
-### Command Parsing
-The `M.parse` function is used to parse the command line arguments provided to the `Arrow` command. It separates the command's name from any additional arguments, allowing for more complex command handling.
-
-### Error Handling
-The `M.error` function is used to display error messages, for instance, when an unknown command is invoked. It leverages Neovim's `vim.notify` function to display error messages with an appropriate log level.
-
-### Extending Commands
-To add new commands, simply extend the `M.commands` table with new key-value pairs. Each new command should have a unique name and an associated function that defines its behavior.
-
-### Completion
-The `complete` function provides custom tab completion for the `Arrow` command, suggesting available command names based on the current input. This enhances the user experience by making it easier to discover and execute commands.
-
-### Summary
-The `commands` module in Arrow offers a flexible and intuitive way to define and manage custom commands in Neovim. By encapsulating command logic in standalone functions and providing built-in parsing, error handling, and completion, it streamlines the development of command-driven features within the plugin.
-
-
-
-
-
 ### Do you like my work? Please, buy me a coffee
 
 https://www.buymeacoffee.com/otavioschwanck
