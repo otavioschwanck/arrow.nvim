@@ -81,6 +81,7 @@ Just press the leader_key set on setup and follow you heart. (Is that easy)
   }
   separate_save_and_remove = false, -- if true, will remove the toggle and create the save/remove keymaps.
   leader_key = ";",
+  save_key = "cwd", -- what will be used as root to save the bookmarks. Can be also `git_root`.
   global_bookmarks = false, -- if true, arrow will save files globally (ignores separate_by_branch)
   index_keys = "123456789zxcbnmZXVBNM,afghjklAFGHJKLwrtyuiopWRTYUIOP", -- keys mapped to bookmark index, i.e. 1st bookmark will be accessible by 1, and 12th - by c
   full_path_list = { "update_stuff" } -- filenames on this list will ALWAYS show the file path too.

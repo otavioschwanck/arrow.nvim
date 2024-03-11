@@ -6,6 +6,8 @@ local ui = require("arrow.ui")
 local persist = require("arrow.persist")
 local git = require("arrow.git")
 local commands = require("arrow.commands")
+local save_keys = require("arrow.save_keys")
+
 M.config = {}
 
 function M.setup(opts)
@@ -67,9 +69,7 @@ function M.setup(opts)
 	config.setState("global_bookmarks", opts.global_bookmarks or false)
 	config.setState("separate_save_and_remove", opts.separate_save_and_remove or false)
 
-	config.setState("save_key", opts.save_key or function()
-		return vim.loop.cwd()
-	end)
+	config.setState("save_key", save_keys[opts.save_key] or save_keys.cwd)
 
 	if leader_key then
 		vim.keymap.set("n", leader_key, ui.openMenu, { noremap = true, silent = true })
@@ -158,7 +158,7 @@ function M.setup(opts)
 		group = "arrow",
 	})
 
-  commands.setup()
+	commands.setup()
 end
 
 return M
