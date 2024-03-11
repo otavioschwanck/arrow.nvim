@@ -2,8 +2,12 @@ local M = {}
 local config = require("arrow.config")
 
 function M.get_git_branch()
-	if vim.fn.isdirectory(".git") ~= 0 then
-		return vim.fn.system("git branch --show-current | tr -d '\n'")
+	local git_files = vim.fs.find(".git", { upward = true, stop = vim.loop.os_homedir() })
+
+	if git_files then
+		local result = vim.fn.system({ "git", "symbolic-ref", "--short", "HEAD" })
+
+		return vim.trim(string.gsub(result, "\n", ""))
 	else
 		return nil
 	end
