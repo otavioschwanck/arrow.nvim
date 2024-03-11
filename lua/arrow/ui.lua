@@ -178,7 +178,7 @@ local function renderBuffer(buffer)
 
 		vim.keymap.set("n", "" .. displayIndex, function()
 			M.openFile(i)
-		end, { buffer = buf, noremap = false, silent = true })
+		end, { noremap = true, silent = true, buffer = buf, nowait = true })
 
 		if icons then
 			local icon, hl_group = get_file_icon(fileNames[i])
