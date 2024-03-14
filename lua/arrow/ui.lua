@@ -244,7 +244,7 @@ local function render_highlights(buffer)
 
 	if config.getState("show_icons") then
 		for k, v in pairs(to_highlight) do
-			vim.api.nvim_buf_add_highlight(menuBuf, -1, v, k, 7, 8)
+			vim.api.nvim_buf_add_highlight(menuBuf, -1, v, k, 5, 8)
 		end
 	end
 
