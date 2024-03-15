@@ -1,5 +1,7 @@
 local M = {}
 
+local config = require("arrow.config")
+
 function M.join_two_keys_tables(tableA, tableB)
 	local newTable = {}
 
@@ -31,9 +33,9 @@ end
 function M.get_path_for(buffer)
 	local bufname = vim.fn.bufname(buffer)
 
-	local cwd = vim.fn.getcwd()
+	local save_key = config.getState("save_key")()
 
-	local escaped_cwd = cwd:gsub("[%(%)%.%%%+%-%*%?%[%]%^%$]", "%%%1")
+	local escaped_cwd = save_key:gsub("[%(%)%.%%%+%-%*%?%[%]%^%$]", "%%%1")
 
 	if bufname:find("^" .. escaped_cwd .. "/") then
 		local relative_path = bufname:gsub("^" .. escaped_cwd .. "/", "")

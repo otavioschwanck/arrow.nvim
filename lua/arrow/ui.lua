@@ -332,8 +332,7 @@ function M.openFile(fileNumber, previousFile)
 		end
 
 		closeMenu()
-
-		action(fileName, vim.b.filename)
+		action(config.getState('save_key')() .. '/' .. fileName, vim.b.filename)
 	end
 end
 

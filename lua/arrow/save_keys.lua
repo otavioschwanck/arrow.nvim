@@ -5,7 +5,13 @@ function M.cwd()
 end
 
 function M.git_root()
-	return vim.fn.system("git rev-parse --show-toplevel | tr -d '\n'")
+	local git_root = vim.fn.system("git rev-parse --show-toplevel 2>&1")
+
+	if vim.v.shell_error == 0 then
+		return git_root:gsub("\n$", "")
+	end
+
+	return M.cwd()
 end
 
 return M
