@@ -1,4 +1,5 @@
 local M = {}
+
 local config = require("arrow.config")
 
 function M.get_git_branch()

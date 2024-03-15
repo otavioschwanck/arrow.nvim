@@ -67,7 +67,7 @@ end
 function M.toggle(filename)
 	git.refresh_git_branch()
 
-	filename = filename or utils.get_path_for("%")
+	filename = filename or utils.get_current_buffer_path()
 
 	local index = M.is_saved(filename)
 	if index then
@@ -126,7 +126,7 @@ end
 function M.next()
 	git.refresh_git_branch()
 
-	local current_index = M.is_saved(utils.get_path_for("%"))
+	local current_index = M.is_saved(utils.get_current_buffer_path())
 	local next_index
 
 	if current_index and current_index < #vim.g.arrow_filenames then
@@ -141,7 +141,7 @@ end
 function M.previous()
 	git.refresh_git_branch()
 
-	local current_index = M.is_saved(utils.get_path_for("%"))
+	local current_index = M.is_saved(utils.get_current_buffer_path())
 	local previous_index
 
 	if current_index and current_index == 1 then

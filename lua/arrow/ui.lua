@@ -332,8 +332,7 @@ function M.openFile(fileNumber, previousFile)
 		end
 
 		closeMenu()
-
-		action(fileName, vim.b.filename)
+		action(config.getState('save_key')() .. '/' .. fileName, vim.b.filename)
 	end
 end
 
@@ -413,7 +412,7 @@ function M.openMenu()
 	if config.getState("global_bookmarks") == true then
 		filename = vim.fn.expand("%:p")
 	else
-		filename = utils.get_path_for("%")
+		filename = utils.get_current_buffer_path()
 	end
 
 	local menuBuf = createMenuBuffer(filename)
@@ -436,14 +435,14 @@ function M.openMenu()
 
 	if separate_save_and_remove then
 		vim.keymap.set("n", mappings.toggle, function()
-			filename = filename or utils.get_path_for("%")
+			filename = filename or utils.get_current_buffer_path()
 
 			persist.save(filename)
 			closeMenu()
 		end, menuKeymapOpts)
 
 		vim.keymap.set("n", mappings.remove, function()
-			filename = filename or utils.get_path_for("%")
+			filename = filename or utils.get_current_buffer_path()
 
 			persist.remove(filename)
 			closeMenu()

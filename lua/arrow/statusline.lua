@@ -18,7 +18,7 @@ function M.in_on_arrow_file()
 	if config.getState("global_bookmarks") == true then
 		filename = vim.fn.expand("%:p")
 	else
-		filename = utils.get_path_for("%")
+		filename = utils.get_current_buffer_path()
 	end
 
 	return persist.is_saved(filename)
