@@ -31,9 +31,9 @@ function M.join_two_arrays(tableA, tableB)
 end
 
 function M.get_current_buffer_path()
-	local absolute_buffer_path = vim.fn.expand('%:p')
+	local absolute_buffer_path = vim.fn.expand("%:p")
 
-	local save_key = config.getState("save_key")()
+	local save_key = config.getState("save_key_cached")
 	local escaped_save_key = save_key:gsub("[%(%)%.%%%+%-%*%?%[%]%^%$]", "%%%1")
 
 	if absolute_buffer_path:find("^" .. escaped_save_key .. "/") then

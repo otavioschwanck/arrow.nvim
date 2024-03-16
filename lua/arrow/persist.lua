@@ -20,11 +20,11 @@ local function save_key()
 		local branch = git.refresh_git_branch()
 
 		if branch then
-			return normalize_path_to_filename(config.getState("save_key")() .. "-" .. branch)
+			return normalize_path_to_filename(config.getState("save_key_cached") .. "-" .. branch)
 		end
 	end
 
-	return normalize_path_to_filename(config.getState("save_key")())
+	return normalize_path_to_filename(config.getState("save_key_cached"))
 end
 
 local function cache_file_path()

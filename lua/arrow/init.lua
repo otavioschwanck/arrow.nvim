@@ -70,6 +70,7 @@ function M.setup(opts)
 	config.setState("separate_save_and_remove", opts.separate_save_and_remove or false)
 
 	config.setState("save_key", save_keys[opts.save_key] or save_keys.cwd)
+	config.setState("save_key_cached", config.getState("save_key")())
 
 	if leader_key then
 		vim.keymap.set("n", leader_key, ui.openMenu, { noremap = true, silent = true })
@@ -153,6 +154,7 @@ function M.setup(opts)
 		callback = function()
 			git.refresh_git_branch()
 			persist.load_cache_file()
+			config.setState("save_key_cached", config.getState("save_key")())
 		end,
 		desc = "load cache file on DirChanged",
 		group = "arrow",

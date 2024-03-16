@@ -332,7 +332,7 @@ function M.openFile(fileNumber, previousFile)
 		end
 
 		closeMenu()
-		action(config.getState('save_key')() .. '/' .. fileName, vim.b.filename)
+		action(config.getState("save_key_cached") .. "/" .. fileName, vim.b.filename)
 	end
 end
 
@@ -426,6 +426,7 @@ function M.openMenu()
 	local separate_save_and_remove = config.getState("separate_save_and_remove")
 
 	local menuKeymapOpts = { noremap = true, silent = true, buffer = menuBuf, nowait = true }
+
 	vim.keymap.set("n", config.getState("leader_key"), closeMenu, menuKeymapOpts)
 	vim.keymap.set("n", mappings.quit, closeMenu, menuKeymapOpts)
 	vim.keymap.set("n", mappings.edit, function()
