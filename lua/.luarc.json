@@ -1,5 +1,9 @@
 {
     "diagnostics.globals": [
-        "vim"
+        "vim",
+        "table"
+    ],
+    "diagnostics.disable": [
+        "inject-field"
     ]
 }

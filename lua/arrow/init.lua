@@ -4,6 +4,7 @@ local config = require("arrow.config")
 local utils = require("arrow.utils")
 local ui = require("arrow.ui")
 local persist = require("arrow.persist")
+local buffer_persist = require("arrow.buffer_persist")
 local git = require("arrow.git")
 local commands = require("arrow.commands")
 local save_keys = require("arrow.save_keys")
@@ -159,6 +160,31 @@ function M.setup(opts)
 		desc = "load cache file on DirChanged",
 		group = "arrow",
 	})
+
+	vim.api.nvim_create_autocmd({ "BufReadPost" }, {
+		callback = function()
+			buffer_persist.load_buffer_bookmarks()
+		end,
+		desc = "load current file cache",
+		group = "arrow",
+	})
+
+	-- NOTE: Just for test, remove later.
+	vim.keymap.set("n", "mm", require("arrow.buffer_persist").save, { noremap = true, silent = true })
+	vim.keymap.set("n", "ml", require("arrow.buffer_ui").openMenu, { noremap = true, silent = true })
+	vim.keymap.set("n", "mC", require("arrow.buffer_persist").clear, { noremap = true, silent = true })
+
+	vim.keymap.set("n", "md1", function()
+		require("arrow.buffer_persist").remove(1)
+	end, { noremap = true, silent = true })
+
+	vim.keymap.set("n", "md2", function()
+		require("arrow.buffer_persist").remove(2)
+	end, { noremap = true, silent = true })
+
+	vim.keymap.set("n", "md3", function()
+		require("arrow.buffer_persist").remove(3)
+	end, { noremap = true, silent = true })
 
 	commands.setup()
 end
