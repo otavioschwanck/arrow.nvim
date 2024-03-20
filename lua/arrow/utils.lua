@@ -44,4 +44,8 @@ function M.get_current_buffer_path()
 	end
 end
 
+function M.string_contains_whitespace(str)
+	return string.match(str, "%s") ~= nil
+end
+
 return M
