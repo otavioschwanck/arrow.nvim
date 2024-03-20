@@ -318,10 +318,13 @@ function M.openFile(fileNumber, previousFile)
 	else
 		if not fileName then
 			print("Invalid file number")
+
 			return
 		end
 
 		local action
+
+		fileName = vim.fn.fnameescape(fileName)
 
 		if vim.b.arrow_current_mode == "" or not vim.b.arrow_current_mode then
 			action = config.getState("open_action")
