@@ -71,24 +71,14 @@ local function generator(opts, settings)
 end
 
 function M.openMenu()
-  local Search = require('portal.search')
-
+  local Portal = require('portal')
   local Settings = require('portal.settings')
-  local settings = vim.tbl_deep_extend('force', Settings.as_table(), {})
+
   local query = function(opts)
     return generator(opts or {}, Settings)
   end
 
-  local windows = require('portal').preview(query())
-
-  local selected_window = Search.select(windows, settings.escape)
-  if selected_window ~= nil then
-    selected_window:select()
-  end
-
-  for _, window in ipairs(windows) do
-    window:close()
-  end
+  Portal.tunnel(query())
 end
 
 return M
