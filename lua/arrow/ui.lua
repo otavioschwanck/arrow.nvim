@@ -29,6 +29,8 @@ local function getActionsMenu()
 		string.format("%s Delete mode", mappings.delete_mode),
 		string.format("%s Open Vertical", mappings.open_vertical),
 		string.format("%s Open Horizontal", mappings.open_horizontal),
+		string.format("%s Next Item", mappings.next_item),
+		string.format("%s Prev Item", mappings.prev_item),
 		string.format("%s Quit", mappings.quit),
 	}
 
@@ -361,7 +363,7 @@ function M.getWindowConfig()
 	local height = #fileNames + 2
 
 	if show_handbook then
-		height = height + 8
+		height = height + 10
 		if separate_save_and_remove then
 			height = height + 1
 		end
@@ -462,6 +464,17 @@ function M.openMenu()
 		persist.clear()
 		closeMenu()
 	end, menuKeymapOpts)
+
+	vim.keymap.set("n", mappings.next_item, function()
+		closeMenu()
+		persist.next()
+	end, menuKeymapOpts)
+
+	vim.keymap.set("n", mappings.prev_item, function()
+		closeMenu()
+		persist.previous()
+	end, menuKeymapOpts)
+
 	vim.keymap.set("n", "<Esc>", closeMenu, menuKeymapOpts)
 
 	vim.keymap.set("n", mappings.delete_mode, function()

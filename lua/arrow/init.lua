@@ -27,6 +27,8 @@ function M.setup(opts)
 		open_horizontal = "-",
 		quit = "q",
 		remove = "x",
+		next_item = "]",
+		prev_item = "[",
 	}
 
 	local default_window_config = {
