@@ -160,6 +160,15 @@ function M.open_cache_file()
 		cache_content = vim.fn.readfile(cache_path)
 	end
 
+	if config.getState("relative_path") == true then
+		for i, line in ipairs(cache_content) do
+			if not line:match("^%./") and not utils.string_contains_whitespace(line) and #cache_content[i] > 1 then
+				cache_content[i] = "./" .. line
+				break
+			end
+		end
+	end
+
 	local bufnr = vim.api.nvim_create_buf(false, true)
 
 	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, cache_content)
@@ -186,18 +195,13 @@ function M.open_cache_file()
 	local close_buffer = ":lua vim.api.nvim_win_close(" .. winid .. ", {force = true})<CR>"
 	vim.api.nvim_buf_set_keymap(bufnr, "n", "q", close_buffer, { noremap = true, silent = true })
 	vim.api.nvim_buf_set_keymap(bufnr, "n", "<Esc>", close_buffer, { noremap = true, silent = true })
-	vim.keymap.set(
-		"n",
-		config.getState("leader_key"),
-		function() end,
-		{ noremap = true, silent = true, buffer = bufnr }
-	)
+	vim.keymap.set("n", config.getState("leader_key"), close_buffer, { noremap = true, silent = true, buffer = bufnr })
 
 	vim.keymap.set("n", "<CR>", function()
 		local line = vim.api.nvim_get_current_line()
 
-		vim.api.nvim_win_close(winid, { force = true })
-		vim.cmd(":edit " .. line)
+		vim.api.nvim_win_close(winid, true)
+		vim.cmd(":edit " .. vim.fn.fnameescape(line))
 	end, { noremap = true, silent = true, buffer = bufnr })
 
 	vim.api.nvim_create_autocmd("BufLeave", {

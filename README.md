@@ -66,6 +66,8 @@ Just press the leader_key set on setup and follow you heart. (Is that easy)
     open_horizontal = "-",
     quit = "q",
     remove = "x", -- only used if separate_save_and_remove is true
+    next_item = "]",
+    prev_item = "["
   },
   custom_actions = {
     open = function(target_file_name, current_file_name) end, -- target_file_name = file selected to be open, current_file_name = filename from where this was called

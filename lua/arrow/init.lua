@@ -28,6 +28,8 @@ function M.setup(opts)
 		open_horizontal = "-",
 		quit = "q",
 		remove = "x",
+		next_item = "]",
+		prev_item = "[",
 	}
 
 	local default_window_config = {
@@ -68,6 +70,7 @@ function M.setup(opts)
 	config.setState("hide_handbook", opts.hide_handbook or false)
 	config.setState("separate_by_branch", opts.separate_by_branch or false)
 	config.setState("global_bookmarks", opts.global_bookmarks or false)
+	config.setState("relative_path", opts.relative_path or false)
 	config.setState("separate_save_and_remove", opts.separate_save_and_remove or false)
 
 	config.setState("save_key", save_keys[opts.save_key] or save_keys.cwd)
