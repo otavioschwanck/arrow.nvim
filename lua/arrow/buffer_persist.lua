@@ -117,8 +117,6 @@ function M.save(bufnr, line_nr, col_nr)
 		table.insert(M.local_bookmarks[bufnr], data)
 
 		M.sync_buffer_bookmarks(bufnr)
-
-		print("SAVED")
 	end
 end
 

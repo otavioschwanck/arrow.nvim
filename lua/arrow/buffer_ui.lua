@@ -39,15 +39,14 @@ function M.spawn_preview_window(buffer, index, bookmark, bookmark_count)
 		border = "single",
 	}
 
-	local win = vim.api.nvim_open_win(buffer, true, window_config)
 	local displayIndex = config.getState("index_keys"):sub(index, index)
 
-	vim.schedule(function()
-		vim.api.nvim_win_set_cursor(win, { bookmark.line, 0 })
-		vim.api.nvim_win_set_option(win, "scrolloff", 999)
-		vim.api.nvim_win_set_config(win, { title = "" .. displayIndex })
-		vim.api.nvim_win_set_option(win, "number", true)
-	end)
+	local win = vim.api.nvim_open_win(buffer, true, window_config)
+
+	vim.api.nvim_win_set_option(win, "scrolloff", 999)
+	vim.api.nvim_win_set_cursor(win, { bookmark.line, 0 })
+	vim.api.nvim_win_set_config(win, { title = "" .. displayIndex })
+	vim.api.nvim_win_set_option(win, "number", true)
 
 	table.insert(preview_buffers, { buffer = buffer, win = win })
 end
@@ -79,6 +78,13 @@ end
 
 function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr)
 	local actions_buffer = vim.api.nvim_create_buf(false, true)
+
+	local hl = vim.api.nvim_get_hl_by_name("Cursor", true)
+	hl.blend = 100
+
+	vim.opt.guicursor:append("a:Cursor/lCursor")
+	vim.api.nvim_set_hl(0, "Cursor", hl)
+
 	local lines_count = config.getState("per_buffer_config").lines
 
 	local window_config = {
@@ -106,12 +112,11 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr)
 		closeMenu(actions_buffer)
 	end, menuKeymapOpts)
 
-	vim.keymap.set("n", config.getState("buffer_leader_key"), function()
+	vim.keymap.set("n", "<Esc>", function()
 		closeMenu(actions_buffer)
 	end, menuKeymapOpts)
 
-	vim.keymap.set("n", mappings.clear_all_items, function()
-		persist.clear(call_buffer)
+	vim.keymap.set("n", config.getState("buffer_leader_key"), function()
 		closeMenu(actions_buffer)
 	end, menuKeymapOpts)
 
@@ -133,12 +138,6 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr)
 			go_to_bookmark(bookmark)
 		end, menuKeymapOpts)
 	end
-
-	local hl = vim.api.nvim_get_hl_by_name("Cursor", true)
-	hl.blend = 100
-
-	vim.opt.guicursor:append("a:Cursor/lCursor")
-	vim.api.nvim_set_hl(0, "Cursor", hl)
 
 	vim.api.nvim_create_autocmd("BufLeave", {
 		buffer = 0,
