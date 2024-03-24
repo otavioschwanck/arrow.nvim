@@ -11,9 +11,9 @@ local function getActionsMenu()
 	local mappings = config.getState("mappings")
 
 	local return_mappings = {
-		string.format("  %s Save", mappings.toggle),
+		string.format("  %s Save Current Line", mappings.toggle),
 		string.format("  %s Delete Mode", mappings.delete_mode),
-		string.format("  %s Clear All", mappings.delete_mode),
+		string.format("  %s Clear All", mappings.clear_all_items),
 		string.format("  %s Quit", mappings.quit),
 	}
 
@@ -65,10 +65,12 @@ local function closeMenu(actions_buffer)
 
 	vim.api.nvim_buf_delete(actions_buffer, { force = true })
 
+	close_preview_windows()
+
 	preview_buffers = {}
 end
 
-function M.spawn_action_windows(call_buffer, bookmarks)
+function M.spawn_action_windows(call_buffer, bookmarks, line_nr)
 	local actions_buffer = vim.api.nvim_create_buf(false, true)
 	local lines_count = config.getState("per_buffer_config").lines
 
@@ -97,7 +99,22 @@ function M.spawn_action_windows(call_buffer, bookmarks)
 		closeMenu(actions_buffer)
 	end, menuKeymapOpts)
 
-	vim.keymap.set("n", mappings.quit, function()
+	vim.keymap.set("n", config.getState("buffer_leader_key"), function()
+		closeMenu(actions_buffer)
+	end, menuKeymapOpts)
+
+	vim.keymap.set("n", mappings.clear_all_items, function()
+		persist.clear(call_buffer)
+		closeMenu(actions_buffer)
+	end, menuKeymapOpts)
+
+	vim.keymap.set("n", mappings.clear_all_items, function()
+		persist.clear(call_buffer)
+		closeMenu(actions_buffer)
+	end, menuKeymapOpts)
+
+	vim.keymap.set("n", mappings.toggle, function()
+		persist.save(call_buffer, line_nr)
 		closeMenu(actions_buffer)
 	end, menuKeymapOpts)
 
@@ -135,6 +152,7 @@ function M.openMenu()
 	local bookmarks = persist.get_bookmarks_by()
 
 	local bufnr = vim.api.nvim_get_current_buf()
+	local line_nr = vim.api.nvim_win_get_cursor(0)[1]
 	local opts_for_spawn = {}
 
 	for index, bookmark in ipairs(bookmarks) do
@@ -145,7 +163,7 @@ function M.openMenu()
 		M.spawn_preview_window(opt[1], opt[2], opt[3], #bookmarks)
 	end
 
-	M.spawn_action_windows(bufnr, bookmarks)
+	M.spawn_action_windows(bufnr, bookmarks, line_nr)
 end
 
 return M

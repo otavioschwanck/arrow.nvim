@@ -43,7 +43,8 @@ end
 function M.sync_buffer_bookmarks(bufnr)
 	bufnr = bufnr or vim.api.nvim_get_current_buf()
 
-	local path = M.cache_file_path(vim.fn.expand("%:p"))
+	local buffer_file_name = vim.api.nvim_buf_get_name(bufnr)
+	local path = M.cache_file_path(buffer_file_name)
 
 	local path_dir = vim.fn.fnamemodify(path, ":h")
 
@@ -100,10 +101,8 @@ function M.clear(bufnr)
 	M.sync_buffer_bookmarks(bufnr)
 end
 
-function M.save(bufnr)
+function M.save(bufnr, line_nr)
 	bufnr = bufnr or vim.api.nvim_get_current_buf()
-
-	local line_nr = vim.api.nvim_win_get_cursor(0)[1]
 
 	if not M.local_bookmarks[bufnr] then
 		M.local_bookmarks[bufnr] = {}
@@ -118,9 +117,7 @@ function M.save(bufnr)
 
 		M.sync_buffer_bookmarks(bufnr)
 
-		print("Saved")
-	else
-		print("Already saved.")
+		print("SAVED")
 	end
 end
 

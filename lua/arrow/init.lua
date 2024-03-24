@@ -20,7 +20,7 @@ function M.setup(opts)
 	opts = opts or {}
 
 	local default_per_buffer_config = {
-		lines = 4,
+		lines = 6,
 	}
 
 	local default_mappings = {
@@ -54,6 +54,7 @@ function M.setup(opts)
 	)
 
 	local leader_key = opts.leader_key or ";"
+	local buffer_leader_key = opts.buffer_leader_key or "m" -- # TODO: Don't set m automatically (is neovim native already, just for tests)
 
 	local actions = opts.custom_actions or {}
 
@@ -73,6 +74,7 @@ function M.setup(opts)
 		return vim.fn.stdpath("cache") .. "/arrow"
 	end)
 	config.setState("leader_key", leader_key)
+	config.setState("buffer_leader_key", buffer_leader_key)
 	config.setState("always_show_path", opts.always_show_path or false)
 	config.setState("show_icons", opts.show_icons)
 	config.setState("index_keys", opts.index_keys or "123456789zcbnmZXVBNM,afghjklAFGHJKLwrtyuiopWRTYUIOP")
@@ -87,6 +89,10 @@ function M.setup(opts)
 
 	if leader_key then
 		vim.keymap.set("n", leader_key, ui.openMenu, { noremap = true, silent = true })
+	end
+
+	if buffer_leader_key then
+		vim.keymap.set("n", buffer_leader_key, require("arrow.buffer_ui").openMenu, { noremap = true, silent = true })
 	end
 
 	local default_full_path_list = {
@@ -180,23 +186,6 @@ function M.setup(opts)
 		desc = "load current file cache",
 		group = "arrow",
 	})
-
-	-- NOTE: Just for test, remove later.
-	vim.keymap.set("n", "mm", require("arrow.buffer_persist").save, { noremap = true, silent = true })
-	vim.keymap.set("n", "ml", require("arrow.buffer_ui").openMenu, { noremap = true, silent = true })
-	vim.keymap.set("n", "mC", require("arrow.buffer_persist").clear, { noremap = true, silent = true })
-
-	vim.keymap.set("n", "md1", function()
-		require("arrow.buffer_persist").remove(1)
-	end, { noremap = true, silent = true })
-
-	vim.keymap.set("n", "md2", function()
-		require("arrow.buffer_persist").remove(2)
-	end, { noremap = true, silent = true })
-
-	vim.keymap.set("n", "md3", function()
-		require("arrow.buffer_persist").remove(3)
-	end, { noremap = true, silent = true })
 
 	commands.setup()
 end
