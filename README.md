@@ -161,7 +161,7 @@ function Builder:format_line(indent_markers, arrows, icon, name, node)
     for i, filename in pairs(extracted_arrow_filenames) do
       if filename == node.name then
         local statusline = require "arrow.statusline"
-        arrow_index = statusline.text_for_statusline(arrow_filenames[i])
+        arrow_index = statusline.text_for_statusline(i)
         line[1].str = string.sub(line[1].str, 1, -3)
         line[2].str = "(" .. arrow_index .. ") "
         line[2].hl = { "ArrowFileIndex" }
