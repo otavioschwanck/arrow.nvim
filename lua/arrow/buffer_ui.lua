@@ -7,19 +7,30 @@ local config = require("arrow.config")
 
 local lastRow = 0
 
+local function getActionsMenu()
+	local mappings = config.getState("mappings")
+
+	local return_mappings = {
+		string.format("  %s Save", mappings.toggle),
+		string.format("  %s Delete Mode", mappings.delete_mode),
+		string.format("  %s Clear All", mappings.delete_mode),
+		string.format("  %s Quit", mappings.quit),
+	}
+
+	return return_mappings
+end
+
 function M.spawn_preview_window(buffer, index, bookmark, bookmark_count)
 	local lines_count = config.getState("per_buffer_config").lines
 
 	local height = math.ceil((vim.o.lines - 4) / 2)
 
-	local row_count = (lines_count + 1)
-
-	local row = height + (index - 1) * (row_count + 2) - (bookmark_count - 1) * row_count
+	local row = height + (index - 1) * (lines_count + 2) - (bookmark_count - 1) * lines_count
 
 	lastRow = row
 
 	local window_config = {
-		height = row_count,
+		height = lines_count,
 		width = 120,
 		row = row,
 		col = math.ceil((vim.o.columns - 120) / 2),
@@ -32,23 +43,27 @@ function M.spawn_preview_window(buffer, index, bookmark, bookmark_count)
 	local displayIndex = config.getState("index_keys"):sub(index, index)
 
 	vim.schedule(function()
-		vim.api.nvim_win_set_option(win, "number", true)
 		vim.api.nvim_win_set_cursor(win, { bookmark.line, 0 })
 		vim.api.nvim_win_set_option(win, "scrolloff", 999)
 		vim.api.nvim_win_set_config(win, { title = "" .. displayIndex })
+		vim.api.nvim_win_set_option(win, "number", true)
 	end)
 
 	table.insert(preview_buffers, { buffer = buffer, win = win })
+end
+
+local function close_preview_windows()
+	for _, buffer in ipairs(preview_buffers) do
+		if vim.api.nvim_win_is_valid(buffer.win) then
+			vim.api.nvim_win_close(buffer.win, true)
+		end
+	end
 end
 
 local function closeMenu(actions_buffer)
 	lastRow = 0
 
 	vim.api.nvim_buf_delete(actions_buffer, { force = true })
-
-	for _, buffer in ipairs(preview_buffers) do
-		vim.api.nvim_win_close(buffer.win, true)
-	end
 
 	preview_buffers = {}
 end
@@ -60,7 +75,7 @@ function M.spawn_action_windows(call_buffer, bookmarks)
 	local window_config = {
 		height = 5,
 		width = 120 / 2,
-		row = lastRow + lines_count + 3,
+		row = lastRow + lines_count + 2,
 		col = math.ceil((vim.o.columns - 120) / 2),
 		style = "minimal",
 		relative = "editor",
@@ -70,8 +85,9 @@ function M.spawn_action_windows(call_buffer, bookmarks)
 	local win = vim.api.nvim_open_win(actions_buffer, true, window_config)
 	local mappings = config.getState("mappings")
 
-	local lines = { "  q - Quit", "  d - Delete Mode" }
-	local menuKeymapOpts = { noremap = true, silent = true, buffer = menuBuf, nowait = true }
+	local lines = getActionsMenu()
+
+	local menuKeymapOpts = { noremap = true, silent = true, buffer = actions_buffer, nowait = true }
 
 	vim.api.nvim_buf_set_option(actions_buffer, "modifiable", true)
 
@@ -80,6 +96,39 @@ function M.spawn_action_windows(call_buffer, bookmarks)
 	vim.keymap.set("n", mappings.quit, function()
 		closeMenu(actions_buffer)
 	end, menuKeymapOpts)
+
+	vim.keymap.set("n", mappings.quit, function()
+		closeMenu(actions_buffer)
+	end, menuKeymapOpts)
+
+	local hl = vim.api.nvim_get_hl_by_name("Cursor", true)
+	hl.blend = 100
+
+	vim.opt.guicursor:append("a:Cursor/lCursor")
+	vim.api.nvim_set_hl(0, "Cursor", hl)
+
+	vim.api.nvim_create_autocmd("BufLeave", {
+		buffer = 0,
+		desc = "Disable Cursor",
+		callback = function()
+			vim.cmd("highlight clear Cursor")
+
+			close_preview_windows()
+
+			vim.schedule(function()
+				local old_hl = hl
+				old_hl.blend = 0
+				vim.api.nvim_set_hl(0, "Cursor", old_hl)
+
+				if vim.api.nvim_buf_is_valid(actions_buffer) then
+					-- close buffer
+					vim.api.nvim_buf_delete(actions_buffer, { force = true })
+				end
+
+				vim.opt.guicursor:remove("a:Cursor/lCursor")
+			end)
+		end,
+	})
 end
 
 function M.openMenu()
