@@ -158,7 +158,7 @@ function Builder:format_line(indent_markers, arrows, icon, name, node)
   local arrow_filenames = vim.g.arrow_filenames
   if arrow_filenames then
     local extracted_arrow_filenames = extractFilenames(arrow_filenames)
-    for i, filename in pairs(extracted_arrow_filenames) do
+    for i, filename in ipairs(extracted_arrow_filenames) do
       if filename == node.name then
         local statusline = require "arrow.statusline"
         arrow_index = statusline.text_for_statusline(i)
