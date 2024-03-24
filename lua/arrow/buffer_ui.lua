@@ -41,8 +41,20 @@ function M.spawn_preview_window(buffer, index, bookmark, bookmark_count)
 	table.insert(preview_buffers, { buffer = buffer, win = win })
 end
 
+local function closeMenu(actions_buffer)
+	lastRow = 0
+
+	vim.api.nvim_buf_delete(actions_buffer, { force = true })
+
+	for _, buffer in ipairs(preview_buffers) do
+		vim.api.nvim_win_close(buffer.win, true)
+	end
+
+	preview_buffers = {}
+end
+
 function M.spawn_action_windows(call_buffer, bookmarks)
-	local buffer = vim.api.nvim_create_buf(false, true)
+	local actions_buffer = vim.api.nvim_create_buf(false, true)
 	local lines_count = config.getState("per_buffer_config").lines
 
 	local window_config = {
@@ -55,11 +67,19 @@ function M.spawn_action_windows(call_buffer, bookmarks)
 		border = "single",
 	}
 
-	local win = vim.api.nvim_open_win(buffer, true, window_config)
+	local win = vim.api.nvim_open_win(actions_buffer, true, window_config)
+	local mappings = config.getState("mappings")
 
 	local lines = { "  q - Quit", "  d - Delete Mode" }
+	local menuKeymapOpts = { noremap = true, silent = true, buffer = menuBuf, nowait = true }
 
-	vim.api.nvim_buf_set_lines(buffer, 0, -1, false, lines)
+	vim.api.nvim_buf_set_option(actions_buffer, "modifiable", true)
+
+	vim.api.nvim_buf_set_lines(actions_buffer, 0, -1, false, lines)
+
+	vim.keymap.set("n", mappings.quit, function()
+		closeMenu(actions_buffer)
+	end, menuKeymapOpts)
 end
 
 function M.openMenu()
