@@ -156,17 +156,20 @@ function Builder:format_line(indent_markers, arrows, icon, name, node)
     return filenames
   end
   local arrow_filenames = vim.g.arrow_filenames
-  local extracted_arrow_filenames = extractFilenames(arrow_filenames)
-  for i, filename in pairs(extracted_arrow_filenames) do
-    if filename == node.name then
-      local statusline = require "arrow.statusline"
-      arrow_index = statusline.text_for_statusline(arrow_filenames[i])
-      line[1].str = string.sub(line[1].str, 1, -3)
-      line[2].str = "(" .. arrow_index .. ") "
-      line[2].hl = { "ArrowFileIndex" }
-      break
+  if arrow_filenames then
+    local extracted_arrow_filenames = extractFilenames(arrow_filenames)
+    for i, filename in pairs(extracted_arrow_filenames) do
+      if filename == node.name then
+        local statusline = require "arrow.statusline"
+        arrow_index = statusline.text_for_statusline(arrow_filenames[i])
+        line[1].str = string.sub(line[1].str, 1, -3)
+        line[2].str = "(" .. arrow_index .. ") "
+        line[2].hl = { "ArrowFileIndex" }
+        break
+      end
     end
   end
+
   add_to_end(line, { icon })
 
   for i = #M.decorators, 1, -1 do
