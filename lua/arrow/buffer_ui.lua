@@ -6,16 +6,23 @@ local persist = require("arrow.buffer_persist")
 local config = require("arrow.config")
 
 local lastRow = 0
+local has_current_line = false
+local current_line_index = -1
 
 local function getActionsMenu()
 	local mappings = config.getState("mappings")
 
 	local return_mappings = {
-		string.format("  %s Save Current Line", mappings.toggle),
 		string.format("  %s Delete Mode", mappings.delete_mode),
 		string.format("  %s Clear All", mappings.clear_all_items),
 		string.format("  %s Quit", mappings.quit),
 	}
+
+	if has_current_line then
+		table.insert(return_mappings, 1, string.format("  %s Remove Line", mappings.toggle))
+	else
+		table.insert(return_mappings, 1, string.format("  %s Save Line", mappings.toggle))
+	end
 
 	return return_mappings
 end
@@ -59,14 +66,19 @@ local function close_preview_windows()
 	end
 end
 
-local function closeMenu(actions_buffer)
+local function reset_variables()
 	lastRow = 0
+	preview_buffers = {}
+	has_current_line = false
+	current_line_index = -1
+end
 
+local function closeMenu(actions_buffer)
 	vim.api.nvim_buf_delete(actions_buffer, { force = true })
 
 	close_preview_windows()
 
-	preview_buffers = {}
+	reset_variables()
 end
 
 local function go_to_bookmark(bookmark)
@@ -76,7 +88,7 @@ local function go_to_bookmark(bookmark)
 	vim.cmd("normal! zz")
 end
 
-function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr)
+function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_window, index)
 	local actions_buffer = vim.api.nvim_create_buf(false, true)
 
 	local hl = vim.api.nvim_get_hl_by_name("Cursor", true)
@@ -88,8 +100,8 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr)
 	local lines_count = config.getState("per_buffer_config").lines
 
 	local window_config = {
-		height = 5,
-		width = 120 / 2,
+		height = 4,
+		width = 17,
 		row = lastRow + lines_count + 2,
 		col = math.ceil((vim.o.columns - 120) / 2),
 		style = "minimal",
@@ -125,10 +137,17 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr)
 		closeMenu(actions_buffer)
 	end, menuKeymapOpts)
 
-	vim.keymap.set("n", mappings.toggle, function()
-		persist.save(call_buffer, line_nr, col_nr)
-		closeMenu(actions_buffer)
-	end, menuKeymapOpts)
+	if not has_current_line then
+		vim.keymap.set("n", mappings.toggle, function()
+			persist.save(call_buffer, line_nr, col_nr)
+			closeMenu(actions_buffer)
+		end, menuKeymapOpts)
+	else
+		vim.keymap.set("n", mappings.toggle, function()
+			persist.remove(current_line_index, call_buffer)
+			closeMenu(actions_buffer)
+		end, menuKeymapOpts)
+	end
 
 	local indexes = config.getState("index_keys")
 
@@ -157,6 +176,9 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr)
 					vim.api.nvim_buf_delete(actions_buffer, { force = true })
 				end
 
+				-- close_preview_windows()
+				-- reset_variables()
+
 				vim.opt.guicursor:remove("a:Cursor/lCursor")
 			end)
 		end,
@@ -166,12 +188,23 @@ end
 function M.openMenu()
 	local bookmarks = persist.get_bookmarks_by()
 
+	if not bookmarks then
+		bookmarks = {}
+	end
+
 	local bufnr = vim.api.nvim_get_current_buf()
 	local line_nr = vim.api.nvim_win_get_cursor(0)[1]
 	local col_nr = vim.api.nvim_win_get_cursor(0)[2]
+	local cur_win = vim.api.nvim_get_current_win()
+
 	local opts_for_spawn = {}
 
-	for index, bookmark in ipairs(bookmarks) do
+	for index, bookmark in ipairs(bookmarks or {}) do
+		if bookmark.line == line_nr then
+			has_current_line = true
+			current_line_index = index
+		end
+
 		table.insert(opts_for_spawn, { bufnr, index, bookmark })
 	end
 
@@ -179,7 +212,7 @@ function M.openMenu()
 		M.spawn_preview_window(opt[1], opt[2], opt[3], #bookmarks)
 	end
 
-	M.spawn_action_windows(bufnr, bookmarks, line_nr, col_nr)
+	M.spawn_action_windows(bufnr, bookmarks, line_nr, col_nr, cur_win)
 end
 
 return M
