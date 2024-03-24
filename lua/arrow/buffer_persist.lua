@@ -101,7 +101,7 @@ function M.clear(bufnr)
 	M.sync_buffer_bookmarks(bufnr)
 end
 
-function M.save(bufnr, line_nr)
+function M.save(bufnr, line_nr, col_nr)
 	bufnr = bufnr or vim.api.nvim_get_current_buf()
 
 	if not M.local_bookmarks[bufnr] then
@@ -110,6 +110,7 @@ function M.save(bufnr, line_nr)
 
 	local data = {
 		line = line_nr,
+		col = col_nr,
 	}
 
 	if not (M.is_saved(bufnr, data)) then

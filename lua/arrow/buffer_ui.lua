@@ -70,7 +70,14 @@ local function closeMenu(actions_buffer)
 	preview_buffers = {}
 end
 
-function M.spawn_action_windows(call_buffer, bookmarks, line_nr)
+local function go_to_bookmark(bookmark)
+	vim.api.nvim_win_set_cursor(0, { bookmark.line, bookmark.col })
+
+	-- centralize cursor
+	vim.cmd("normal! zz")
+end
+
+function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr)
 	local actions_buffer = vim.api.nvim_create_buf(false, true)
 	local lines_count = config.getState("per_buffer_config").lines
 
@@ -114,9 +121,18 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr)
 	end, menuKeymapOpts)
 
 	vim.keymap.set("n", mappings.toggle, function()
-		persist.save(call_buffer, line_nr)
+		persist.save(call_buffer, line_nr, col_nr)
 		closeMenu(actions_buffer)
 	end, menuKeymapOpts)
+
+	local indexes = config.getState("index_keys")
+
+	for index, bookmark in ipairs(bookmarks) do
+		vim.keymap.set("n", indexes:sub(index, index), function()
+			closeMenu(actions_buffer)
+			go_to_bookmark(bookmark)
+		end, menuKeymapOpts)
+	end
 
 	local hl = vim.api.nvim_get_hl_by_name("Cursor", true)
 	hl.blend = 100
@@ -153,6 +169,7 @@ function M.openMenu()
 
 	local bufnr = vim.api.nvim_get_current_buf()
 	local line_nr = vim.api.nvim_win_get_cursor(0)[1]
+	local col_nr = vim.api.nvim_win_get_cursor(0)[2]
 	local opts_for_spawn = {}
 
 	for index, bookmark in ipairs(bookmarks) do
@@ -163,7 +180,7 @@ function M.openMenu()
 		M.spawn_preview_window(opt[1], opt[2], opt[3], #bookmarks)
 	end
 
-	M.spawn_action_windows(bufnr, bookmarks, line_nr)
+	M.spawn_action_windows(bufnr, bookmarks, line_nr, col_nr)
 end
 
 return M
