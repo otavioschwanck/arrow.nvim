@@ -48,6 +48,11 @@ function M.setup(opts)
 
 	config.setState("window", utils.join_two_keys_tables(default_window_config, opts.window or {}))
 
+	config.setState(
+		"per_buffer_config",
+		utils.join_two_keys_tables(default_per_buffer_config, opts.per_buffer_config or {})
+	)
+
 	local leader_key = opts.leader_key or ";"
 
 	local actions = opts.custom_actions or {}

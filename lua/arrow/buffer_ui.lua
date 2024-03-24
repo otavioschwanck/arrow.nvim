@@ -3,17 +3,25 @@ local M = {}
 local preview_buffers = {}
 
 local persist = require("arrow.buffer_persist")
+local config = require("arrow.config")
 
-function M.spawn_preview_window(buffer, index, bookmark)
-	local lines_count = 4
+local lastRow = 0
+
+function M.spawn_preview_window(buffer, index, bookmark, bookmark_count)
+	local lines_count = config.getState("per_buffer_config").lines
+
 	local height = math.ceil((vim.o.lines - 4) / 2)
 
 	local row_count = (lines_count + 1)
 
+	local row = height + (index - 1) * (row_count + 2) - (bookmark_count - 1) * row_count
+
+	lastRow = row
+
 	local window_config = {
 		height = row_count,
 		width = 120,
-		row = height + (index - 1) * (row_count + 2),
+		row = row,
 		col = math.ceil((vim.o.columns - 120) / 2),
 		style = "minimal",
 		relative = "editor",
@@ -31,7 +39,26 @@ function M.spawn_preview_window(buffer, index, bookmark)
 	table.insert(preview_buffers, { buffer = buffer, win = win })
 end
 
-function M.spawn_action_windows() end
+function M.spawn_action_windows(call_buffer, bookmarks)
+	local buffer = vim.api.nvim_create_buf(false, true)
+	local lines_count = config.getState("per_buffer_config").lines
+
+	local window_config = {
+		height = 5,
+		width = 120 / 2,
+		row = lastRow + lines_count + 3,
+		col = math.ceil((vim.o.columns - 120) / 2),
+		style = "minimal",
+		relative = "editor",
+		border = "single",
+	}
+
+	local win = vim.api.nvim_open_win(buffer, true, window_config)
+
+	local lines = { "  q - Quit", "  d - Delete Mode" }
+
+	vim.api.nvim_buf_set_lines(buffer, 0, -1, false, lines)
+end
 
 function M.openMenu()
 	local bookmarks = persist.get_bookmarks_by()
@@ -44,10 +71,10 @@ function M.openMenu()
 	end
 
 	for _, opt in ipairs(opts_for_spawn) do
-		M.spawn_preview_window(opt[1], opt[2], opt[3])
+		M.spawn_preview_window(opt[1], opt[2], opt[3], #bookmarks)
 	end
 
-	M.spawn_action_windows()
+	M.spawn_action_windows(bufnr, bookmarks)
 end
 
 return M
