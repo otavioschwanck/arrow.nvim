@@ -19,6 +19,10 @@ function M.setup(opts)
 
 	opts = opts or {}
 
+	local default_per_buffer_config = {
+		lines = 4,
+	}
+
 	local default_mappings = {
 		edit = "e",
 		delete_mode = "d",

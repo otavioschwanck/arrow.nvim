@@ -1,84 +1,53 @@
 local M = {}
 
-local persist = require('arrow.buffer_persist')
+local preview_buffers = {}
 
----@type Portal.QueryGenerator
-local function generator(opts, settings)
-  local Content = require('portal.content')
-  local Iterator = require('portal.iterator')
-  local Search = require('portal.search')
+local persist = require("arrow.buffer_persist")
 
-  local ok, _ = pcall(require, 'arrow')
-  if not ok then
-    return require('portal.log').error(
-      "Unable to load 'arrow'. Please ensure that arrow is installed."
-    )
-  end
+function M.spawn_preview_window(buffer, index, bookmark)
+	local lines_count = 4
+	local height = math.ceil((vim.o.lines - 4) / 2)
 
-  local marks = require('arrow.buffer_persist').get_bookmarks_by()
+	local row_count = (lines_count + 1)
 
-  opts = vim.tbl_extend('force', {
-    direction = 'forward',
-    max_results = #settings.labels,
-  }, opts or {})
+	local window_config = {
+		height = row_count,
+		width = 120,
+		row = height + (index - 1) * (row_count + 2),
+		col = math.ceil((vim.o.columns - 120) / 2),
+		style = "minimal",
+		relative = "editor",
+		border = "single",
+	}
 
-  if settings.max_results then
-    opts.max_results = math.min(opts.max_results, settings.max_results)
-  end
+	local win = vim.api.nvim_open_win(buffer, true, window_config)
 
-    -- stylua: ignore
-    local iter = Iterator:new(marks)
-        :take(settings.lookback)
+	vim.schedule(function()
+		vim.api.nvim_win_set_option(win, "number", true)
+		vim.api.nvim_win_set_cursor(win, { bookmark.line, 0 })
+		vim.api.nvim_win_set_option(win, "scrolloff", 999)
+	end)
 
-  if opts.start then
-    iter = iter:start_at(opts.start)
-  end
-  if opts.direction == Search.direction.backward then
-    iter = iter:reverse()
-  end
-
-  iter = iter:map(function(v, i)
-    local buffer = vim.api.nvim_get_current_buf()
-    local win = vim.api.nvim_get_current_win()
-
-    return Content:new({
-      type = 'bookmarks',
-      buffer = buffer,
-      cursor = { row = v.line, col = 0 },
-      callback = function(_)
-        vim.api.nvim_win_set_cursor(win, { v.line, 0 })
-      end,
-      extra = {
-        index = i,
-      },
-    })
-  end)
-
-  if settings.filter then
-    iter = iter:filter(settings.filter)
-  end
-  if opts.filter then
-    iter = iter:filter(opts.filter)
-  end
-  if not opts.slots then
-    iter = iter:take(opts.max_results)
-  end
-
-  return {
-    source = iter,
-    slots = opts.slots,
-  }
+	table.insert(preview_buffers, { buffer = buffer, win = win })
 end
 
+function M.spawn_action_windows() end
+
 function M.openMenu()
-  local Portal = require('portal')
-  local Settings = require('portal.settings')
+	local bookmarks = persist.get_bookmarks_by()
 
-  local query = function(opts)
-    return generator(opts or {}, Settings)
-  end
+	local bufnr = vim.api.nvim_get_current_buf()
+	local opts_for_spawn = {}
 
-  Portal.tunnel(query())
+	for index, bookmark in ipairs(bookmarks) do
+		table.insert(opts_for_spawn, { bufnr, index, bookmark })
+	end
+
+	for _, opt in ipairs(opts_for_spawn) do
+		M.spawn_preview_window(opt[1], opt[2], opt[3])
+	end
+
+	M.spawn_action_windows()
 end
 
 return M
