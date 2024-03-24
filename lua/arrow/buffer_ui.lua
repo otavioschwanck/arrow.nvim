@@ -29,11 +29,13 @@ function M.spawn_preview_window(buffer, index, bookmark, bookmark_count)
 	}
 
 	local win = vim.api.nvim_open_win(buffer, true, window_config)
+	local displayIndex = config.getState("index_keys"):sub(index, index)
 
 	vim.schedule(function()
 		vim.api.nvim_win_set_option(win, "number", true)
 		vim.api.nvim_win_set_cursor(win, { bookmark.line, 0 })
 		vim.api.nvim_win_set_option(win, "scrolloff", 999)
+		vim.api.nvim_win_set_config(win, { title = "" .. displayIndex })
 	end)
 
 	table.insert(preview_buffers, { buffer = buffer, win = win })
