@@ -24,8 +24,8 @@ function M.in_on_arrow_file()
 	return persist.is_saved(filename)
 end
 
-function M.text_for_statusline()
-	local index = M.in_on_arrow_file()
+function M.text_for_statusline(index)
+	index = index or M.in_on_arrow_file()
 
 	if index then
 		return show_right_index(index)
