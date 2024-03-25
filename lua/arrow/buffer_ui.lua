@@ -8,6 +8,7 @@ local config = require("arrow.config")
 local lastRow = 0
 local has_current_line = false
 local current_line_index = -1
+local call_win = -1
 
 local function getActionsMenu()
 	local mappings = config.getState("mappings")
@@ -71,12 +72,18 @@ local function reset_variables()
 	preview_buffers = {}
 	has_current_line = false
 	current_line_index = -1
+	call_win = -1
+end
+
+local function go_to_window()
+	vim.api.nvim_set_current_win(call_win)
 end
 
 local function closeMenu(actions_buffer)
 	vim.api.nvim_buf_delete(actions_buffer, { force = true })
 
 	close_preview_windows()
+	go_to_window()
 
 	reset_variables()
 end
@@ -95,7 +102,8 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_wi
 	hl.blend = 100
 
 	vim.opt.guicursor:append("a:Cursor/lCursor")
-	vim.api.nvim_set_hl(0, "Cursor", hl)
+
+	pcall(vim.api.nvim_set_hl, 0, "Cursor", hl)
 
 	local lines_count = config.getState("per_buffer_config").lines
 
@@ -169,15 +177,12 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_wi
 			vim.schedule(function()
 				local old_hl = hl
 				old_hl.blend = 0
-				vim.api.nvim_set_hl(0, "Cursor", old_hl)
+				pcall(vim.api.nvim_set_hl, 0, "Cursor", old_hl)
 
 				if vim.api.nvim_buf_is_valid(actions_buffer) then
 					-- close buffer
 					vim.api.nvim_buf_delete(actions_buffer, { force = true })
 				end
-
-				-- close_preview_windows()
-				-- reset_variables()
 
 				vim.opt.guicursor:remove("a:Cursor/lCursor")
 			end)
@@ -195,7 +200,8 @@ function M.openMenu()
 	local bufnr = vim.api.nvim_get_current_buf()
 	local line_nr = vim.api.nvim_win_get_cursor(0)[1]
 	local col_nr = vim.api.nvim_win_get_cursor(0)[2]
-	local cur_win = vim.api.nvim_get_current_win()
+
+	call_win = vim.api.nvim_get_current_win()
 
 	local opts_for_spawn = {}
 

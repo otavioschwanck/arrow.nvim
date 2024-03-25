@@ -36,7 +36,13 @@ function M.load_buffer_bookmarks(bufnr)
 
 		f:close()
 
-		M.local_bookmarks[bufnr] = json.decode(content)
+		local success, result = pcall(json.decode, content)
+
+		if success then
+			M.local_bookmarks[bufnr] = result
+		else
+			M.local_bookmarks[bufnr] = {}
+		end
 	end
 end
 
