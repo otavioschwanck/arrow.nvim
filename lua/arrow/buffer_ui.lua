@@ -9,6 +9,8 @@ local lastRow = 0
 local has_current_line = false
 local current_line_index = -1
 local call_win = -1
+local delete_mode = false
+local current_highlight = nil
 
 local function getActionsMenu()
 	local mappings = config.getState("mappings")
@@ -73,6 +75,11 @@ local function reset_variables()
 	has_current_line = false
 	current_line_index = -1
 	call_win = -1
+	delete_mode = false
+
+	if current_highlight then
+		pcall(vim.api.nvim_set_hl, 0, "FloatBorder", current_highlight)
+	end
 end
 
 local function go_to_window()
@@ -93,6 +100,23 @@ local function go_to_bookmark(bookmark)
 
 	-- centralize cursor
 	vim.cmd("normal! zz")
+end
+
+local function toggle_delete_mode()
+	if delete_mode then
+		delete_mode = false
+
+		-- set hl to current_highlight
+		pcall(vim.api.nvim_set_hl, 0, "FloatBorder", current_highlight)
+	else
+		delete_mode = true
+
+		current_highlight = vim.api.nvim_get_hl_by_name("FloatBorder", true)
+		local arrow_delete_mode = vim.api.nvim_get_hl_by_name("ArrowDeleteMode", true)
+
+		vim.api.nvim_set_hl(0, "FloatBorder", { fg = arrow_delete_mode.bg or "red" })
+		pcall(vim.api.nvim_set_hl, 0, "Cursor")
+	end
 end
 
 function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_window, index)
@@ -143,6 +167,10 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_wi
 	vim.keymap.set("n", mappings.clear_all_items, function()
 		persist.clear(call_buffer)
 		closeMenu(actions_buffer)
+	end, menuKeymapOpts)
+
+	vim.keymap.set("n", mappings.delete_mode, function()
+		toggle_delete_mode()
 	end, menuKeymapOpts)
 
 	if not has_current_line then
