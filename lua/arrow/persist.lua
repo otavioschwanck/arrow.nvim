@@ -4,13 +4,6 @@ local config = require("arrow.config")
 local utils = require("arrow.utils")
 local git = require("arrow.git")
 
-local function normalize_path_to_filename(path)
-	if vim.fn.has("win32") then
-		path = path:gsub("\\", "/")
-	end
-	return path:gsub("/", "_")
-end
-
 local function save_key()
 	if config.getState("global_bookmarks") == true then
 		return "global"
@@ -20,11 +13,11 @@ local function save_key()
 		local branch = git.refresh_git_branch()
 
 		if branch then
-			return normalize_path_to_filename(config.getState("save_key_cached") .. "-" .. branch)
+			return utils.normalize_path_to_filename(config.getState("save_key_cached") .. "-" .. branch)
 		end
 	end
 
-	return normalize_path_to_filename(config.getState("save_key_cached"))
+	return utils.normalize_path_to_filename(config.getState("save_key_cached"))
 end
 
 local function cache_file_path()

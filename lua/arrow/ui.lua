@@ -527,7 +527,7 @@ function M.openMenu()
 			vim.schedule(function()
 				local old_hl = hl
 				old_hl.blend = 0
-				vim.api.nvim_set_hl(0, "Cursor", old_hl)
+				pcall(vim.api.nvim_set_hl, 0, "Cursor", old_hl)
 
 				vim.opt.guicursor:remove("a:Cursor/lCursor")
 			end)
