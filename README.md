@@ -98,6 +98,7 @@ vim.keymap.set("n", "L", require("arrow.persist").next)
 vim.keymap.set("n", "<C-s>", require("arrow.persist").toggle)
 ```
 
+
 ## Statusline
 
 You can use `require('arrow.statusline')` to access the statusline helpers:
@@ -110,6 +111,81 @@ statusline.text_for_statusline_with_icons() -- Same, but with an bow and arrow i
 ```
 
 ![statusline](https://i.imgur.com/v7Rvagj.png)
+
+## NvimTree
+Show arrow marks in front of filename
+
+<img width="343" alt="截屏2024-03-25 04 14 51" src="https://github.com/xzbdmw/arrow.nvim/assets/97848247/2e286b50-4e13-4618-bd08-5b445bb47658">
+
+A small patch is needed.
+<details>
+  <summary>Click to expand</summary>
+
+  In `nvim-tree.lua/lua/nvim-tree/renderer/builder.lua`
+change function `formate_line` to
+```lua
+function Builder:format_line(indent_markers, arrows, icon, name, node)
+  local added_len = 0
+  local function add_to_end(t1, t2)
+    if not t2 then
+      return
+    end
+    for _, v in ipairs(t2) do
+      if added_len > 0 then
+        table.insert(t1, { str = M.opts.renderer.icons.padding })
+      end
+      table.insert(t1, v)
+    end
+
+    -- first add_to_end don't need padding
+    -- hence added_len is calculated at the end to be used next time
+    added_len = 0
+    for _, v in ipairs(t2) do
+      added_len = added_len + #v.str
+    end
+  end
+
+  local line = { indent_markers, arrows }
+  local arrow_index = 1
+  local function extractFilenames(paths)
+    local filenames = {}
+    for _, path in ipairs(paths) do
+      local filename = path:match "([^/]+)$"
+      table.insert(filenames, filename)
+    end
+    return filenames
+  end
+  local arrow_filenames = vim.g.arrow_filenames
+  if arrow_filenames then
+    local extracted_arrow_filenames = extractFilenames(arrow_filenames)
+    for i, filename in ipairs(extracted_arrow_filenames) do
+      if filename == node.name then
+        local statusline = require "arrow.statusline"
+        arrow_index = statusline.text_for_statusline(i)
+        line[1].str = string.sub(line[1].str, 1, -3)
+        line[2].str = "(" .. arrow_index .. ") "
+        line[2].hl = { "ArrowFileIndex" }
+        break
+      end
+    end
+  end
+
+  add_to_end(line, { icon })
+
+  for i = #M.decorators, 1, -1 do
+    add_to_end(line, M.decorators[i]:icons_before(node))
+  end
+
+  add_to_end(line, { name })
+
+  for i = #M.decorators, 1, -1 do
+    add_to_end(line, M.decorators[i]:icons_after(node))
+  end
+
+  return line
+end
+```
+</details>
 
 ## Highlights
 
