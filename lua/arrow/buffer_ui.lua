@@ -12,6 +12,16 @@ local call_win = -1
 local delete_mode = false
 local current_highlight = nil
 
+vim.api.nvim_create_autocmd("BufLeave", {
+	callback = function(args)
+		local bufnr = tonumber(args.buf)
+		if persist.get_bookmarks_by(bufnr) ~= nil then
+			persist.update(bufnr)
+			persist.sync_buffer_bookmarks(bufnr)
+		end
+	end,
+})
+
 local function getActionsMenu()
 	local mappings = config.getState("mappings")
 
@@ -44,7 +54,6 @@ function M.spawn_preview_window(buffer, index, bookmark, bookmark_count)
 		width = 120,
 		row = row,
 		col = math.ceil((vim.o.columns - 120) / 2),
-		style = "minimal",
 		relative = "editor",
 		border = "single",
 	}
@@ -63,9 +72,11 @@ end
 
 local function close_preview_windows()
 	for _, buffer in ipairs(preview_buffers) do
-		if vim.api.nvim_win_is_valid(buffer.win) then
-			vim.api.nvim_win_close(buffer.win, true)
-		end
+		vim.schedule(function()
+			if vim.api.nvim_win_is_valid(buffer.win) then
+				vim.api.nvim_win_close(buffer.win, true)
+			end
+		end)
 	end
 end
 
@@ -219,6 +230,8 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_wi
 end
 
 function M.openMenu()
+	persist.update()
+	persist.sync_buffer_bookmarks()
 	local bookmarks = persist.get_bookmarks_by()
 
 	if not bookmarks then
