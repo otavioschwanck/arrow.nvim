@@ -137,7 +137,7 @@ function M.update(bufnr)
 		for _, mark in ipairs(M.local_bookmarks[bufnr]) do
 			for _, extmark in ipairs(extmarks) do
 				local extmark_id, extmark_row, _ = unpack(extmark)
-				if mark.ext_id == extmark_id and mark.line ~= extmark_row then
+				if mark.ext_id == extmark_id and mark.line ~= extmark_row + 1 then
 					mark.line = extmark_row + 1
 				end
 			end
