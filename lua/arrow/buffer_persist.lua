@@ -86,6 +86,7 @@ function M.sync_buffer_bookmarks(bufnr)
 		else
 			file:write(json.encode(M.local_bookmarks[bufnr]))
 		end
+		file:flush()
 		return true
 	end
 
