@@ -107,10 +107,15 @@ local function closeMenu(actions_buffer)
 end
 
 local function go_to_bookmark(bookmark)
-	vim.api.nvim_win_set_cursor(0, { bookmark.line, bookmark.col })
+	vim.cmd("normal! m'")
+	local win_height = vim.fn.winheight(0)
+	local top_line = vim.fn.line("w0")
 
-	-- centralize cursor
-	vim.cmd("normal! zz")
+	vim.api.nvim_win_set_cursor(0, { bookmark.line, bookmark.col })
+	if bookmark.line < top_line or bookmark.line >= top_line + win_height then
+		-- centralize cursor
+		vim.cmd("normal! zz")
+	end
 end
 
 local function toggle_delete_mode()
