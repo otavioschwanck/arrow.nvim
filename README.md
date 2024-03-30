@@ -115,7 +115,7 @@ statusline.text_for_statusline_with_icons() -- Same, but with an bow and arrow i
 ## NvimTree
 Show arrow marks in front of filename
 
-<img width="343" alt="截屏2024-03-25 04 14 51" src="https://github.com/xzbdmw/arrow.nvim/assets/97848247/2e286b50-4e13-4618-bd08-5b445bb47658">
+<img width="343" alt="截屏2024-03-25 04 14 51" src="https://private-user-images.githubusercontent.com/97848247/318196350-7c71a880-0920-46d0-a1d4-14b72d152c5e.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MTE4MDUyMTAsIm5iZiI6MTcxMTgwNDkxMCwicGF0aCI6Ii85Nzg0ODI0Ny8zMTgxOTYzNTAtN2M3MWE4ODAtMDkyMC00NmQwLWExZDQtMTRiNzJkMTUyYzVlLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDAzMzAlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwMzMwVDEzMjE1MFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTUyOTQ3OGJjN2QzM2VkYjIxNWQyMTQ0ZWI4YTAyZjlkNWMwZjdlN2FjODM3NGU1YzBmNWY2NzJhNDA3YjMyZDQmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.U1OsWMsE0WQB_kT0ZjZlcr1UD7eU1Jrz25NXOvKUmZ0">
 
 A small patch is needed.
 <details>
