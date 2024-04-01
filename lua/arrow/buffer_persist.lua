@@ -4,7 +4,17 @@ local config = require("arrow.config")
 local utils = require("arrow.utils")
 local json = require("arrow.json")
 
+local ns = vim.api.nvim_create_namespace("arrow_bookmarks")
 M.local_bookmarks = {}
+
+vim.api.nvim_create_autocmd("VimLeavePre", {
+	callback = function()
+		for bufnr, _ in pairs(M.local_bookmarks) do
+			M.update(bufnr)
+			M.sync_buffer_bookmarks(bufnr)
+		end
+	end,
+})
 
 local function save_key(filename)
 	return utils.normalize_path_to_filename(filename)
@@ -37,7 +47,17 @@ function M.load_buffer_bookmarks(bufnr)
 		f:close()
 
 		local success, result = pcall(json.decode, content)
-
+		if result ~= nil then
+			for _, res in ipairs(result) do
+				local line = res.line
+				local id = vim.api.nvim_buf_set_extmark(bufnr, ns, line - 1, -1, {
+					sign_text = "󰧌",
+					sign_hl_group = "BookmarkSign",
+					hl_mode = "combine",
+				})
+				res.ext_id = id
+			end
+		end
 		if success then
 			M.local_bookmarks[bufnr] = result
 		else
@@ -61,8 +81,12 @@ function M.sync_buffer_bookmarks(bufnr)
 	local file = io.open(path, "w")
 
 	if file then
-		file:write(json.encode(M.local_bookmarks[bufnr]))
-
+		if M.local_bookmarks[bufnr] == nil or #M.local_bookmarks[bufnr] == 0 then
+			file:write("[]")
+		else
+			file:write(json.encode(M.local_bookmarks[bufnr]))
+		end
+		file:flush()
 		return true
 	end
 
@@ -93,7 +117,7 @@ function M.remove(index, bufnr)
 	if M.local_bookmarks[bufnr][index] == nil then
 		return
 	end
-
+	vim.api.nvim_buf_del_extmark(bufnr, ns, M.local_bookmarks[bufnr][index].ext_id)
 	table.remove(M.local_bookmarks[bufnr], index)
 
 	M.sync_buffer_bookmarks(bufnr)
@@ -103,8 +127,23 @@ function M.clear(bufnr)
 	bufnr = bufnr or vim.api.nvim_get_current_buf()
 
 	M.local_bookmarks[bufnr] = {}
-
+	vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
 	M.sync_buffer_bookmarks(bufnr)
+end
+
+function M.update(bufnr)
+	bufnr = bufnr or vim.api.nvim_get_current_buf()
+	local extmarks = vim.api.nvim_buf_get_extmarks(bufnr, ns, { 0, 0 }, { -1, -1 }, {})
+	if M.local_bookmarks[bufnr] ~= nil then
+		for _, mark in ipairs(M.local_bookmarks[bufnr]) do
+			for _, extmark in ipairs(extmarks) do
+				local extmark_id, extmark_row, _ = unpack(extmark)
+				if mark.ext_id == extmark_id and mark.line ~= extmark_row + 1 then
+					mark.line = extmark_row + 1
+				end
+			end
+		end
+	end
 end
 
 function M.save(bufnr, line_nr, col_nr)
@@ -114,9 +153,16 @@ function M.save(bufnr, line_nr, col_nr)
 		M.local_bookmarks[bufnr] = {}
 	end
 
+	local id = vim.api.nvim_buf_set_extmark(bufnr, ns, line_nr - 1, -1, {
+		sign_text = "󰧌",
+		sign_hl_group = "BookmarkSign",
+		hl_mode = "combine",
+	})
+
 	local data = {
 		line = line_nr,
 		col = col_nr,
+		ext_id = id,
 	}
 
 	if not (M.is_saved(bufnr, data)) then
