@@ -135,23 +135,21 @@ function M.update(bufnr)
 	bufnr = bufnr or vim.api.nvim_get_current_buf()
 	local line_count = vim.api.nvim_buf_line_count(bufnr)
 	local extmarks = vim.api.nvim_buf_get_extmarks(bufnr, ns, { 0, 0 }, { -1, -1 }, {})
-	local deleted = {}
+
 	if M.local_bookmarks[bufnr] ~= nil then
-		for index, mark in ipairs(M.local_bookmarks[bufnr]) do
+		for _, mark in ipairs(M.local_bookmarks[bufnr]) do
 			for _, extmark in ipairs(extmarks) do
 				local extmark_id, extmark_row, _ = unpack(extmark)
-				if mark.ext_id == extmark_id and line_count < extmark_row + 1 then
-					table.insert(deleted, index)
-				end
 				if mark.ext_id == extmark_id and mark.line ~= extmark_row + 1 then
 					mark.line = extmark_row + 1
 				end
 			end
 		end
-		for _, index in ipairs(deleted) do
-			M.local_bookmarks[bufnr][index] = nil
-		end
 	end
+
+	M.local_bookmarks[bufnr] = vim.tbl_filter(function(mark)
+		return line_count >= mark.line
+	end, M.local_bookmarks[bufnr])
 end
 
 function M.save(bufnr, line_nr, col_nr)
