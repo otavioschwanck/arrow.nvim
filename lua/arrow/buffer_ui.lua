@@ -124,6 +124,21 @@ local function go_to_window()
 	end
 end
 
+local function render_highlights(buffer)
+	vim.api.nvim_buf_clear_namespace(buffer, -1, 0, -1)
+
+	local buffer_line_count = vim.api.nvim_buf_line_count(buffer)
+
+	for i = 0, buffer_line_count - 1 do
+		vim.api.nvim_buf_add_highlight(buffer, -1, "ArrowFileIndex", i, 0, 3)
+
+		-- if line contains Delete Mode
+		if string.match(vim.fn.getline(i + 1), "Delete Mode") and delete_mode then
+			vim.api.nvim_buf_add_highlight(buffer, -1, "ArrowDeleteMode", i, 0, 3)
+		end
+	end
+end
+
 local function delete_marks_from_delete_mode(call_buffer)
 	local reversely_sorted_to_delete = vim.fn.reverse(vim.fn.sort(to_delete))
 
@@ -164,7 +179,7 @@ local function go_to_bookmark(bookmark)
 	end
 end
 
-local function toggle_delete_mode()
+local function toggle_delete_mode(action_buffer)
 	if delete_mode then
 		delete_mode = false
 
@@ -178,6 +193,8 @@ local function toggle_delete_mode()
 		vim.api.nvim_set_hl(0, "FloatBorder", { fg = arrow_delete_mode.bg or "red" })
 		pcall(vim.api.nvim_set_hl, 0, "Cursor")
 	end
+
+	render_highlights(action_buffer)
 end
 
 function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_window, index)
@@ -247,7 +264,7 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_wi
 
 	vim.keymap.set("n", mappings.delete_mode, function()
 		if #bookmarks > 0 then
-			toggle_delete_mode()
+			toggle_delete_mode(actions_buffer)
 		end
 	end, menuKeymapOpts)
 
@@ -306,6 +323,8 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_wi
 			end)
 		end,
 	})
+
+	render_highlights(actions_buffer)
 end
 
 function M.openMenu()
