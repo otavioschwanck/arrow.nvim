@@ -71,9 +71,15 @@ function M.spawn_preview_window(buffer, index, bookmark, bookmark_count)
 
 	local win = vim.api.nvim_open_win(buffer, true, window_config)
 
+	local extra_title = ""
+
+	if current_line_index == index then
+		extra_title = "(Current)"
+	end
+
 	vim.api.nvim_win_set_option(win, "scrolloff", 999)
 	vim.api.nvim_win_set_cursor(win, { bookmark.line, 0 })
-	vim.api.nvim_win_set_config(win, { title = displayIndex .. ":" })
+	vim.api.nvim_win_set_config(win, { title = displayIndex .. " " .. extra_title })
 	vim.api.nvim_win_set_option(win, "number", true)
 
 	table.insert(preview_buffers, { buffer = buffer, win = win, index = index })
@@ -126,9 +132,7 @@ local function delete_marks_from_delete_mode(call_buffer)
 	end
 end
 
-local function closeMenu(actions_buffer, call_buffer)
-	vim.api.nvim_buf_delete(actions_buffer, { force = true })
-
+local function after_close(call_buffer)
 	close_preview_windows()
 	go_to_window()
 
@@ -137,10 +141,15 @@ local function closeMenu(actions_buffer, call_buffer)
 	reset_variables()
 
 	persist.clear_buffer_ext_marks(call_buffer)
+	persist.redraw_bookmarks(call_buffer, persist.get_bookmarks_by(call_buffer))
+end
 
-	vim.schedule(function()
-		persist.redraw_bookmarks(call_buffer, persist.get_bookmarks_by(call_buffer))
-	end)
+local function closeMenu(actions_buffer, call_buffer)
+	if vim.api.nvim_buf_is_valid(actions_buffer) then
+		vim.api.nvim_buf_delete(actions_buffer, { force = true })
+	end
+
+	after_close(call_buffer)
 end
 
 local function go_to_bookmark(bookmark)
@@ -149,6 +158,7 @@ local function go_to_bookmark(bookmark)
 	local top_line = vim.fn.line("w0")
 
 	vim.api.nvim_win_set_cursor(0, { bookmark.line, bookmark.col })
+
 	if bookmark.line < top_line or bookmark.line >= top_line + win_height then
 		vim.cmd("normal! zz")
 	end
@@ -289,8 +299,7 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_wi
 				pcall(vim.api.nvim_set_hl, 0, "Cursor", old_hl)
 
 				if vim.api.nvim_buf_is_valid(actions_buffer) then
-					-- close buffer
-					vim.api.nvim_buf_delete(actions_buffer, { force = true })
+					closeMenu(actions_buffer, call_buffer)
 				end
 
 				vim.opt.guicursor:remove("a:Cursor/lCursor")
