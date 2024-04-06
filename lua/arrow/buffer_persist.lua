@@ -133,7 +133,9 @@ end
 
 function M.update(bufnr)
 	bufnr = bufnr or vim.api.nvim_get_current_buf()
+	local line_count = vim.api.nvim_buf_line_count(bufnr)
 	local extmarks = vim.api.nvim_buf_get_extmarks(bufnr, ns, { 0, 0 }, { -1, -1 }, {})
+
 	if M.local_bookmarks[bufnr] ~= nil then
 		for _, mark in ipairs(M.local_bookmarks[bufnr]) do
 			for _, extmark in ipairs(extmarks) do
@@ -144,6 +146,10 @@ function M.update(bufnr)
 			end
 		end
 	end
+
+	M.local_bookmarks[bufnr] = vim.tbl_filter(function(mark)
+		return line_count >= mark.line
+	end, M.local_bookmarks[bufnr])
 end
 
 function M.save(bufnr, line_nr, col_nr)
