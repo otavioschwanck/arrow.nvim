@@ -377,6 +377,7 @@ function M.getWindowConfig()
 	}
 
 	local is_empty = #vim.g.arrow_filenames == 0
+
 	if is_empty and show_handbook then
 		current_config.height = 5
 		current_config.width = 18

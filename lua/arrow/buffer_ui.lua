@@ -22,14 +22,22 @@ vim.api.nvim_create_autocmd("BufLeave", {
 	end,
 })
 
-local function getActionsMenu()
+local function getActionsMenu(count)
 	local mappings = config.getState("mappings")
 
-	local return_mappings = {
-		string.format("  %s Delete Mode", mappings.delete_mode),
-		string.format("  %s Clear All", mappings.clear_all_items),
-		string.format("  %s Quit", mappings.quit),
-	}
+	local return_mappings
+
+	if count == 0 then
+		return_mappings = {
+			string.format("  %s Quit", mappings.quit),
+		}
+	else
+		return_mappings = {
+			string.format("  %s Delete Mode", mappings.delete_mode),
+			string.format("  %s Clear All", mappings.clear_all_items),
+			string.format("  %s Quit", mappings.quit),
+		}
+	end
 
 	if has_current_line then
 		table.insert(return_mappings, 1, string.format("  %s Remove Line", mappings.toggle))
@@ -67,7 +75,16 @@ function M.spawn_preview_window(buffer, index, bookmark, bookmark_count)
 	vim.api.nvim_win_set_config(win, { title = "" .. displayIndex })
 	vim.api.nvim_win_set_option(win, "number", true)
 
-	table.insert(preview_buffers, { buffer = buffer, win = win })
+	table.insert(preview_buffers, { buffer = buffer, win = win, index = index })
+end
+
+local function remove_preview_buffer_by_index(index)
+	for i, buffer in ipairs(preview_buffers) do
+		if buffer.index == index then
+			table.remove(preview_buffers, i)
+			vim.api.nvim_win_close(buffer.win, true)
+		end
+	end
 end
 
 local function close_preview_windows()
@@ -94,7 +111,9 @@ local function reset_variables()
 end
 
 local function go_to_window()
-	vim.api.nvim_set_current_win(call_win)
+	if vim.api.nvim_win_is_valid(call_win) then
+		vim.api.nvim_set_current_win(call_win)
+	end
 end
 
 local function closeMenu(actions_buffer)
@@ -147,20 +166,35 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_wi
 
 	local lines_count = config.getState("per_buffer_config").lines
 
-	local window_config = {
-		height = 4,
-		width = 17,
-		row = lastRow + lines_count + 2,
-		col = math.ceil((vim.o.columns - 120) / 2),
-		style = "minimal",
-		relative = "editor",
-		border = "single",
-	}
+	local window_config
 
-	local win = vim.api.nvim_open_win(actions_buffer, true, window_config)
+	if #bookmarks == 0 then
+		window_config = {
+			height = 2,
+			width = 15,
+			row = math.ceil((vim.o.lines - 2) / 2),
+			col = math.ceil((vim.o.columns - 15) / 2),
+			style = "minimal",
+			relative = "editor",
+			border = "single",
+		}
+	else
+		window_config = {
+			height = 4,
+			width = 17,
+			row = lastRow + lines_count + 2,
+			col = math.ceil((vim.o.columns - 120) / 2),
+			style = "minimal",
+			relative = "editor",
+			border = "single",
+		}
+	end
+
+	vim.api.nvim_open_win(actions_buffer, true, window_config)
+
 	local mappings = config.getState("mappings")
 
-	local lines = getActionsMenu()
+	local lines = getActionsMenu(#bookmarks)
 
 	local menuKeymapOpts = { noremap = true, silent = true, buffer = actions_buffer, nowait = true }
 
@@ -186,7 +220,9 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_wi
 	end, menuKeymapOpts)
 
 	vim.keymap.set("n", mappings.delete_mode, function()
-		toggle_delete_mode()
+		if #bookmarks > 0 then
+			toggle_delete_mode()
+		end
 	end, menuKeymapOpts)
 
 	if not has_current_line then
@@ -203,10 +239,16 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_wi
 
 	local indexes = config.getState("index_keys")
 
-	for index, bookmark in ipairs(bookmarks) do
-		vim.keymap.set("n", indexes:sub(index, index), function()
-			closeMenu(actions_buffer)
-			go_to_bookmark(bookmark)
+	for i, bookmark in ipairs(bookmarks) do
+		vim.keymap.set("n", indexes:sub(i, i), function()
+			if delete_mode then
+				remove_preview_buffer_by_index(i)
+
+				persist.remove(i, call_buffer)
+			else
+				closeMenu(actions_buffer)
+				go_to_bookmark(bookmark)
+			end
 		end, menuKeymapOpts)
 	end
 
