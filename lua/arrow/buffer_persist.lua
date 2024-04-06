@@ -32,6 +32,28 @@ function M.cache_file_path(filename)
 	return save_path .. "/" .. save_key(filename)
 end
 
+function M.clear_buffer_ext_marks(bufnr)
+	bufnr = bufnr or vim.api.nvim_get_current_buf()
+
+	vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
+end
+
+function M.redraw_bookmarks(bufnr, result)
+	for i, res in ipairs(result) do
+		local indexes = config.getState("index_keys")
+
+		local line = res.line
+
+		local id = vim.api.nvim_buf_set_extmark(bufnr, ns, line - 1, -1, {
+			sign_text = indexes:sub(i, i) .. "",
+			sign_hl_group = "ArrowBookmarkSign",
+			hl_mode = "combine",
+		})
+
+		res.ext_id = id
+	end
+end
+
 function M.load_buffer_bookmarks(bufnr)
 	bufnr = bufnr or vim.api.nvim_get_current_buf()
 
@@ -47,19 +69,10 @@ function M.load_buffer_bookmarks(bufnr)
 		f:close()
 
 		local success, result = pcall(json.decode, content)
-		if result ~= nil then
-			for i, res in ipairs(result) do
-				local line = res.line
-				local id = vim.api.nvim_buf_set_extmark(bufnr, ns, line - 1, -1, {
-					sign_text = i .. "",
-					sign_hl_group = "ArrowBookmarkSign",
-					hl_mode = "combine",
-				})
-				res.ext_id = id
-			end
-		end
 		if success then
 			M.local_bookmarks[bufnr] = result
+
+			M.redraw_bookmarks(bufnr, result)
 		else
 			M.local_bookmarks[bufnr] = {}
 		end
@@ -117,7 +130,6 @@ function M.remove(index, bufnr)
 	if M.local_bookmarks[bufnr][index] == nil then
 		return
 	end
-	vim.api.nvim_buf_del_extmark(bufnr, ns, M.local_bookmarks[bufnr][index].ext_id)
 	table.remove(M.local_bookmarks[bufnr], index)
 
 	M.sync_buffer_bookmarks(bufnr)
@@ -159,16 +171,9 @@ function M.save(bufnr, line_nr, col_nr, next_index)
 		M.local_bookmarks[bufnr] = {}
 	end
 
-	local id = vim.api.nvim_buf_set_extmark(bufnr, ns, line_nr - 1, -1, {
-		sign_text = next_index .. "",
-		sign_hl_group = "BookmarkSign",
-		hl_mode = "combine",
-	})
-
 	local data = {
 		line = line_nr,
 		col = col_nr,
-		ext_id = id,
 	}
 
 	if not (M.is_saved(bufnr, data)) then

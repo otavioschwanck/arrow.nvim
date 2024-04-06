@@ -11,6 +11,7 @@ local current_line_index = -1
 local call_win = -1
 local delete_mode = false
 local current_highlight = nil
+local to_delete = {}
 
 vim.api.nvim_create_autocmd("BufLeave", {
 	callback = function(args)
@@ -81,7 +82,7 @@ end
 local function remove_preview_buffer_by_index(index)
 	for i, buffer in ipairs(preview_buffers) do
 		if buffer.index == index then
-			table.remove(preview_buffers, i)
+			table.insert(to_delete, i)
 			vim.api.nvim_win_close(buffer.win, true)
 		end
 	end
@@ -102,6 +103,7 @@ local function reset_variables()
 	preview_buffers = {}
 	has_current_line = false
 	current_line_index = -1
+	to_delete = {}
 	call_win = -1
 	delete_mode = false
 
@@ -116,13 +118,29 @@ local function go_to_window()
 	end
 end
 
-local function closeMenu(actions_buffer)
+local function delete_marks_from_delete_mode(call_buffer)
+	local reversely_sorted_to_delete = vim.fn.reverse(vim.fn.sort(to_delete))
+
+	for _, index in ipairs(reversely_sorted_to_delete) do
+		persist.remove(index, call_buffer)
+	end
+end
+
+local function closeMenu(actions_buffer, call_buffer)
 	vim.api.nvim_buf_delete(actions_buffer, { force = true })
 
 	close_preview_windows()
 	go_to_window()
 
+	delete_marks_from_delete_mode(call_buffer)
+
 	reset_variables()
+
+	persist.clear_buffer_ext_marks(call_buffer)
+
+	vim.schedule(function()
+		persist.redraw_bookmarks(call_buffer, persist.get_bookmarks_by(call_buffer))
+	end)
 end
 
 local function go_to_bookmark(bookmark)
@@ -132,7 +150,6 @@ local function go_to_bookmark(bookmark)
 
 	vim.api.nvim_win_set_cursor(0, { bookmark.line, bookmark.col })
 	if bookmark.line < top_line or bookmark.line >= top_line + win_height then
-		-- centralize cursor
 		vim.cmd("normal! zz")
 	end
 end
@@ -141,7 +158,6 @@ local function toggle_delete_mode()
 	if delete_mode then
 		delete_mode = false
 
-		-- set hl to current_highlight
 		pcall(vim.api.nvim_set_hl, 0, "FloatBorder", current_highlight)
 	else
 		delete_mode = true
@@ -203,20 +219,20 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_wi
 	vim.api.nvim_buf_set_lines(actions_buffer, 0, -1, false, lines)
 
 	vim.keymap.set("n", mappings.quit, function()
-		closeMenu(actions_buffer)
+		closeMenu(actions_buffer, call_buffer)
 	end, menuKeymapOpts)
 
 	vim.keymap.set("n", "<Esc>", function()
-		closeMenu(actions_buffer)
+		closeMenu(actions_buffer, call_buffer)
 	end, menuKeymapOpts)
 
 	vim.keymap.set("n", config.getState("buffer_leader_key"), function()
-		closeMenu(actions_buffer)
+		closeMenu(actions_buffer, call_buffer)
 	end, menuKeymapOpts)
 
 	vim.keymap.set("n", mappings.clear_all_items, function()
 		persist.clear(call_buffer)
-		closeMenu(actions_buffer)
+		closeMenu(actions_buffer, call_buffer)
 	end, menuKeymapOpts)
 
 	vim.keymap.set("n", mappings.delete_mode, function()
@@ -228,12 +244,12 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_wi
 	if not has_current_line then
 		vim.keymap.set("n", mappings.toggle, function()
 			persist.save(call_buffer, line_nr, col_nr, #bookmarks + 1)
-			closeMenu(actions_buffer)
+			closeMenu(actions_buffer, call_buffer)
 		end, menuKeymapOpts)
 	else
 		vim.keymap.set("n", mappings.toggle, function()
 			persist.remove(current_line_index, call_buffer)
-			closeMenu(actions_buffer)
+			closeMenu(actions_buffer, call_buffer)
 		end, menuKeymapOpts)
 	end
 
@@ -241,13 +257,20 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_wi
 
 	for i, bookmark in ipairs(bookmarks) do
 		vim.keymap.set("n", indexes:sub(i, i), function()
-			if delete_mode then
-				remove_preview_buffer_by_index(i)
+			local found = false
+			for _, deleted in ipairs(to_delete) do
+				if i == deleted then
+					found = true
+				end
+			end
 
-				persist.remove(i, call_buffer)
-			else
-				closeMenu(actions_buffer)
-				go_to_bookmark(bookmark)
+			if not found then
+				if delete_mode then
+					remove_preview_buffer_by_index(i)
+				else
+					closeMenu(actions_buffer, call_buffer)
+					go_to_bookmark(bookmark)
+				end
 			end
 		end, menuKeymapOpts)
 	end
