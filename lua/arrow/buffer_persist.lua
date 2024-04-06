@@ -48,11 +48,11 @@ function M.load_buffer_bookmarks(bufnr)
 
 		local success, result = pcall(json.decode, content)
 		if result ~= nil then
-			for _, res in ipairs(result) do
+			for i, res in ipairs(result) do
 				local line = res.line
 				local id = vim.api.nvim_buf_set_extmark(bufnr, ns, line - 1, -1, {
-					sign_text = "󰧌",
-					sign_hl_group = "BookmarkSign",
+					sign_text = i .. "",
+					sign_hl_group = "ArrowBookmarkSign",
 					hl_mode = "combine",
 				})
 				res.ext_id = id
@@ -152,7 +152,7 @@ function M.update(bufnr)
 	end, M.local_bookmarks[bufnr])
 end
 
-function M.save(bufnr, line_nr, col_nr)
+function M.save(bufnr, line_nr, col_nr, next_index)
 	bufnr = bufnr or vim.api.nvim_get_current_buf()
 
 	if not M.local_bookmarks[bufnr] then
@@ -160,7 +160,7 @@ function M.save(bufnr, line_nr, col_nr)
 	end
 
 	local id = vim.api.nvim_buf_set_extmark(bufnr, ns, line_nr - 1, -1, {
-		sign_text = "󰧌",
+		sign_text = next_index .. "",
 		sign_hl_group = "BookmarkSign",
 		hl_mode = "combine",
 	})

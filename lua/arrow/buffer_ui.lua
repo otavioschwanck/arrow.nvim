@@ -227,7 +227,7 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_wi
 
 	if not has_current_line then
 		vim.keymap.set("n", mappings.toggle, function()
-			persist.save(call_buffer, line_nr, col_nr)
+			persist.save(call_buffer, line_nr, col_nr, #bookmarks + 1)
 			closeMenu(actions_buffer)
 		end, menuKeymapOpts)
 	else
