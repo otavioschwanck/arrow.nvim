@@ -245,6 +245,14 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_wi
 
 	vim.api.nvim_buf_set_lines(actions_buffer, 0, -1, false, lines)
 
+	vim.keymap.set("n", config.getState("leader_key"), function()
+		closeMenu(actions_buffer, call_buffer)
+
+		vim.schedule(function()
+			require("arrow.ui").openMenu()
+		end)
+	end, menuKeymapOpts)
+
 	vim.keymap.set("n", mappings.quit, function()
 		closeMenu(actions_buffer, call_buffer)
 	end, menuKeymapOpts)
@@ -327,7 +335,7 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_wi
 	render_highlights(actions_buffer)
 end
 
-function M.openMenu()
+function M.openMenu(bufnr)
 	persist.update()
 	persist.sync_buffer_bookmarks()
 	local bookmarks = persist.get_bookmarks_by()
@@ -336,7 +344,7 @@ function M.openMenu()
 		bookmarks = {}
 	end
 
-	local bufnr = vim.api.nvim_get_current_buf()
+	bufnr = bufnr or vim.api.nvim_get_current_buf()
 	local line_nr = vim.api.nvim_win_get_cursor(0)[1]
 	local col_nr = vim.api.nvim_win_get_cursor(0)[2]
 
