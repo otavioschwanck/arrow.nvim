@@ -6,6 +6,7 @@ local json = require("arrow.json")
 
 local ns = vim.api.nvim_create_namespace("arrow_bookmarks")
 M.local_bookmarks = {}
+M.last_sync_bookmarks = {}
 
 vim.api.nvim_create_autocmd("VimLeavePre", {
 	callback = function()
@@ -55,6 +56,17 @@ function M.redraw_bookmarks(bufnr, result)
 end
 
 function M.load_buffer_bookmarks(bufnr)
+	-- return if already loaded
+	if M.local_bookmarks[bufnr] ~= nil then
+		return
+	end
+
+	if
+		M.last_sync_bookmarks[bufnr] ~= nil and utils.table_comp(M.last_sync_bookmarks[bufnr], M.local_bookmarks[bufnr])
+	then
+		return
+	end
+
 	bufnr = bufnr or vim.api.nvim_get_current_buf()
 
 	local path = M.cache_file_path(vim.fn.expand("%:p"))
@@ -82,6 +94,14 @@ end
 function M.sync_buffer_bookmarks(bufnr)
 	bufnr = bufnr or vim.api.nvim_get_current_buf()
 
+	if
+		M.last_sync_bookmarks[bufnr]
+		and M.local_bookmarks[bufnr]
+		and utils.table_comp(M.last_sync_bookmarks[bufnr], M.local_bookmarks[bufnr])
+	then
+		return
+	end
+
 	local buffer_file_name = vim.api.nvim_buf_get_name(bufnr)
 	local path = M.cache_file_path(buffer_file_name)
 
@@ -100,6 +120,9 @@ function M.sync_buffer_bookmarks(bufnr)
 			file:write(json.encode(M.local_bookmarks[bufnr]))
 		end
 		file:flush()
+
+		M.last_sync_bookmarks[bufnr] = M.local_bookmarks[bufnr]
+
 		return true
 	end
 
