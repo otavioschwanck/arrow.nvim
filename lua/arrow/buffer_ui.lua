@@ -13,12 +13,13 @@ local delete_mode = false
 local current_highlight = nil
 local to_delete = {}
 
-vim.api.nvim_create_autocmd("BufLeave", {
+vim.api.nvim_create_autocmd({ "BufLeave", "BufWritePost" }, {
 	callback = function(args)
 		local bufnr = tonumber(args.buf)
 		if persist.get_bookmarks_by(bufnr) ~= nil then
 			persist.update(bufnr)
 			persist.sync_buffer_bookmarks(bufnr)
+			persist.redraw_bookmarks(bufnr, persist.get_bookmarks_by(bufnr))
 		end
 	end,
 })
@@ -336,15 +337,16 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_wi
 end
 
 function M.openMenu(bufnr)
+	bufnr = bufnr or vim.api.nvim_get_current_buf()
 	persist.update()
 	persist.sync_buffer_bookmarks()
+	persist.redraw_bookmarks(bufnr, persist.get_bookmarks_by(bufnr))
 	local bookmarks = persist.get_bookmarks_by()
 
 	if not bookmarks then
 		bookmarks = {}
 	end
 
-	bufnr = bufnr or vim.api.nvim_get_current_buf()
 	local line_nr = vim.api.nvim_win_get_cursor(0)[1]
 	local col_nr = vim.api.nvim_win_get_cursor(0)[2]
 
