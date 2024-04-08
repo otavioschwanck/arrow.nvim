@@ -185,7 +185,7 @@ function M.update(bufnr)
 	-- remove marks that go beyond total_line
 	M.local_bookmarks[bufnr] = vim.tbl_filter(function(mark)
 		return line_count >= mark.line
-	end, M.local_bookmarks[bufnr])
+	end, M.local_bookmarks[bufnr] or {})
 
 	-- remove overlap marks
 	local hash = {}
