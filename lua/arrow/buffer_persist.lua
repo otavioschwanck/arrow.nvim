@@ -175,7 +175,7 @@ function M.update(bufnr)
 		for _, mark in ipairs(M.local_bookmarks[bufnr]) do
 			for _, extmark in ipairs(extmarks) do
 				local extmark_id, extmark_row, _ = unpack(extmark)
-				if mark.ext_id == extmark_id and mark.line ~= extmark_row + 1 then
+				if mark.ext_id == extmark_id and mark.line ~= extmark_row + 1 and (extmark_row + 1) < line_count then
 					mark.line = extmark_row + 1
 				end
 			end
@@ -200,7 +200,7 @@ function M.update(bufnr)
 	M.local_bookmarks[bufnr] = set
 end
 
-function M.save(bufnr, line_nr, col_nr, next_index)
+function M.save(bufnr, line_nr, col_nr)
 	bufnr = bufnr or vim.api.nvim_get_current_buf()
 
 	if not M.local_bookmarks[bufnr] then

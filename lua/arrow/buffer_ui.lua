@@ -18,8 +18,9 @@ vim.api.nvim_create_autocmd({ "BufLeave", "BufWritePost" }, {
 		local bufnr = tonumber(args.buf)
 		if persist.get_bookmarks_by(bufnr) ~= nil then
 			persist.update(bufnr)
-			persist.sync_buffer_bookmarks(bufnr)
+			persist.clear_buffer_ext_marks(bufnr)
 			persist.redraw_bookmarks(bufnr, persist.get_bookmarks_by(bufnr))
+			persist.sync_buffer_bookmarks(bufnr)
 		end
 	end,
 })
@@ -279,7 +280,7 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_wi
 
 	if not has_current_line then
 		vim.keymap.set("n", mappings.toggle, function()
-			persist.save(call_buffer, line_nr, col_nr, #bookmarks + 1)
+			persist.save(call_buffer, line_nr, col_nr)
 			closeMenu(actions_buffer, call_buffer)
 		end, menuKeymapOpts)
 	else
