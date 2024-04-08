@@ -167,37 +167,39 @@ function M.clear(bufnr)
 end
 
 function M.update(bufnr)
-	bufnr = bufnr or vim.api.nvim_get_current_buf()
-	local line_count = vim.api.nvim_buf_line_count(bufnr)
-	local extmarks = vim.api.nvim_buf_get_extmarks(bufnr, ns, { 0, 0 }, { -1, -1 }, {})
+	vim.schedule(function()
+		bufnr = bufnr or vim.api.nvim_get_current_buf()
+		local line_count = vim.api.nvim_buf_line_count(bufnr)
+		local extmarks = vim.api.nvim_buf_get_extmarks(bufnr, ns, { 0, 0 }, { -1, -1 }, {})
 
-	if M.local_bookmarks[bufnr] ~= nil then
-		for _, mark in ipairs(M.local_bookmarks[bufnr]) do
-			for _, extmark in ipairs(extmarks) do
-				local extmark_id, extmark_row, _ = unpack(extmark)
-				if mark.ext_id == extmark_id and mark.line ~= extmark_row + 1 and (extmark_row + 1) < line_count then -- Not ideal, it don't recalculate when formatting changes line count
-					mark.line = extmark_row + 1
+		if M.local_bookmarks[bufnr] ~= nil then
+			for _, mark in ipairs(M.local_bookmarks[bufnr]) do
+				for _, extmark in ipairs(extmarks) do
+					local extmark_id, extmark_row, _ = unpack(extmark)
+					if mark.ext_id == extmark_id and mark.line ~= extmark_row + 1 then -- Not ideal, it don't recalculate when formatting changes line count
+						mark.line = extmark_row + 1
+					end
 				end
 			end
 		end
-	end
 
-	-- remove marks that go beyond total_line
-	M.local_bookmarks[bufnr] = vim.tbl_filter(function(mark)
-		return line_count >= mark.line
-	end, M.local_bookmarks[bufnr] or {})
+		-- remove marks that go beyond total_line
+		M.local_bookmarks[bufnr] = vim.tbl_filter(function(mark)
+			return line_count >= mark.line
+		end, M.local_bookmarks[bufnr] or {})
 
-	-- remove overlap marks
-	local hash = {}
-	local set = {}
-	for _, mark in ipairs(M.local_bookmarks[bufnr]) do
-		if not hash[mark.line] then
-			set[#set + 1] = mark
-			hash[mark.line] = true
+		-- remove overlap marks
+		local hash = {}
+		local set = {}
+		for _, mark in ipairs(M.local_bookmarks[bufnr]) do
+			if not hash[mark.line] then
+				set[#set + 1] = mark
+				hash[mark.line] = true
+			end
 		end
-	end
 
-	M.local_bookmarks[bufnr] = set
+		M.local_bookmarks[bufnr] = set
+	end)
 end
 
 function M.save(bufnr, line_nr, col_nr)
