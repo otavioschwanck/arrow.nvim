@@ -167,9 +167,8 @@ function M.clear(bufnr)
 end
 
 function M.update(bufnr)
-	bufnr = bufnr or vim.api.nvim_get_current_buf()
-
 	vim.schedule(function()
+		bufnr = bufnr or vim.api.nvim_get_current_buf()
 		local line_count = vim.api.nvim_buf_line_count(bufnr)
 		local extmarks = vim.api.nvim_buf_get_extmarks(bufnr, ns, { 0, 0 }, { -1, -1 }, {})
 
