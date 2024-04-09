@@ -199,6 +199,22 @@ local function toggle_delete_mode(action_buffer)
 	render_highlights(action_buffer)
 end
 
+function M.toggle_line(call_buffer, line_nr, col_nr)
+	local is_saved
+
+	for i, bookmark in ipairs(persist.get_bookmarks_by(call_buffer)) do
+		if bookmark.line == line_nr then
+			is_saved = i
+		end
+	end
+
+	if is_saved ~= nil then
+		persist.remove(is_saved, call_buffer)
+	else
+		persist.save(call_buffer, line_nr, col_nr)
+	end
+end
+
 function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_window, index)
 	local actions_buffer = vim.api.nvim_create_buf(false, true)
 
