@@ -1,9 +1,11 @@
 {
     "diagnostics.globals": [
         "vim",
-        "table"
+        "table",
+        "ipairs"
     ],
     "diagnostics.disable": [
-        "inject-field"
+        "inject-field",
+        "redundant-parameter"
     ]
 }

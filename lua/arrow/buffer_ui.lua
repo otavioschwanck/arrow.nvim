@@ -199,6 +199,44 @@ local function toggle_delete_mode(action_buffer)
 	render_highlights(action_buffer)
 end
 
+function M.next_item(bufnr, line_nr)
+	bufnr = bufnr or vim.api.nvim_get_current_buf()
+
+	local bookmarks = persist.get_bookmarks_by(bufnr)
+
+	-- find closest bookmark after the line_nr, if exists, go to it, if not, go to first
+
+	local sorted_by_line_bookmarks = vim.fn.sort(bookmarks, function(a, b)
+		return a.line > b.line
+	end)
+
+	for _, bookmark in ipairs(sorted_by_line_bookmarks) do
+		if bookmark.line > line_nr then
+			return go_to_bookmark(bookmark)
+		end
+	end
+
+	go_to_bookmark(sorted_by_line_bookmarks[1])
+end
+
+function M.prev_item(bufnr, line_nr)
+	bufnr = bufnr or vim.api.nvim_get_current_buf()
+
+	local bookmarks = persist.get_bookmarks_by(bufnr)
+
+	local sorted_by_line_bookmarks = vim.fn.sort(bookmarks, function(a, b)
+		return a.line < b.line
+	end)
+
+	for _, bookmark in ipairs(sorted_by_line_bookmarks) do
+		if bookmark.line < line_nr then
+			return go_to_bookmark(bookmark)
+		end
+	end
+
+	go_to_bookmark(sorted_by_line_bookmarks[#sorted_by_line_bookmarks])
+end
+
 function M.toggle_line(call_buffer, line_nr, col_nr)
 	local is_saved
 
