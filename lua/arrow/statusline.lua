@@ -22,8 +22,8 @@ function M.is_on_arrow_file(bufnr)
     return persist.is_saved(file_path)
 end
 
-function M.text_for_statusline(index)
-    index = index or M.is_on_arrow_file()
+function M.text_for_statusline(bufnr)
+    local index = M.is_on_arrow_file(bufnr)
 
 	if index then
 		return show_right_index(index)
@@ -32,8 +32,8 @@ function M.text_for_statusline(index)
 	end
 end
 
-function M.text_for_statusline_with_icons()
-    local index = M.is_on_arrow_file()
+function M.text_for_statusline_with_icons(bufnr)
+    local index = M.is_on_arrow_file(bufnr)
 
 	if index then
 		return "󱡁 " .. show_right_index(index)
