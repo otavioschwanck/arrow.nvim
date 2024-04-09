@@ -23,7 +23,7 @@ function M.is_on_arrow_file(bufnr)
 end
 
 function M.text_for_statusline(index)
-	index = index or M.in_on_arrow_file()
+    index = index or M.is_on_arrow_file()
 
 	if index then
 		return show_right_index(index)
@@ -33,7 +33,7 @@ function M.text_for_statusline(index)
 end
 
 function M.text_for_statusline_with_icons()
-	local index = M.in_on_arrow_file()
+    local index = M.is_on_arrow_file()
 
 	if index then
 		return "󱡁 " .. show_right_index(index)
