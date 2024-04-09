@@ -8,8 +8,6 @@ local function show_right_index(index)
 	return config.getState("index_keys"):sub(index, index)
 end
 
-end
-
 function M.is_on_arrow_file(bufnr)
     bufnr = bufnr or vim.api.nvim_get_current_buf()
 
