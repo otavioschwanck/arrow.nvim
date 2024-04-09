@@ -181,7 +181,6 @@ function M.open_cache_file()
 		for i, line in ipairs(cache_content) do
 			if not line:match("^%./") and not utils.string_contains_whitespace(line) and #cache_content[i] > 1 then
 				cache_content[i] = "./" .. line
-				break
 			end
 		end
 	end
