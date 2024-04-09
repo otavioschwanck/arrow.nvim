@@ -102,6 +102,12 @@ function M.sync_buffer_bookmarks(bufnr)
 		return
 	end
 
+	if config.getState("per_buffer_config").sort_automatically then
+		table.sort(M.local_bookmarks[bufnr], function(a, b)
+			return a.line < b.line
+		end)
+	end
+
 	local buffer_file_name = vim.api.nvim_buf_get_name(bufnr)
 	local path = M.cache_file_path(buffer_file_name)
 

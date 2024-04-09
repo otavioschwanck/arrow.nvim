@@ -20,7 +20,8 @@ function M.setup(opts)
 	opts = opts or {}
 
 	local default_per_buffer_config = {
-		lines = 6,
+		lines = 4,
+		sort_automatically = true,
 	}
 
 	local default_mappings = {
