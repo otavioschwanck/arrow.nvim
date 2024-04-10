@@ -36,7 +36,7 @@ end
 
 function M.get_buffer_path(bufnr)
     local bufname = vim.fn.bufname(bufnr)
-    local absolute_buffer_path = vim.fn.expand(bufname .. ":p")
+    local absolute_buffer_path = vim.fn.fnamemodify(bufname, ":p")
 
     local save_key = config.getState("save_key_cached")
     local escaped_save_key = save_key:gsub("[%(%)%.%%%+%-%*%?%[%]%^%$]", "%%%1")
