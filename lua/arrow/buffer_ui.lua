@@ -106,9 +106,11 @@ function M.spawn_preview_window(buffer, index, bookmark, bookmark_count)
 			vim.notify("you don't have treesitter-context installed", vim.log.levels.WARN)
 		end
 		local context, context_lines = require("treesitter-context.context").get(buffer, win)
-		vim.defer_fn(function()
-			require("treesitter-context.render").open(buffer, win, context, context_lines)
-		end, 10)
+		if context and #context > 0 then
+			vim.defer_fn(function()
+				require("treesitter-context.render").open(buffer, win, context, context_lines)
+			end, 10)
+		end
 	end
 
 	table.insert(preview_buffers, { buffer = buffer, win = win, index = index })
