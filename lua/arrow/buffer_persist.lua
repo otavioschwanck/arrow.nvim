@@ -21,6 +21,10 @@ local function save_key(filename)
 	return utils.normalize_path_to_filename(filename)
 end
 
+function M.get_ns()
+	return ns
+end
+
 function M.cache_file_path(filename)
 	local save_path = config.getState("save_path")()
 

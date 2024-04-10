@@ -13,14 +13,18 @@ local delete_mode = false
 local current_highlight = nil
 local to_delete = {}
 
+local function update_everything(bufnr)
+	persist.update(bufnr)
+	persist.clear_buffer_ext_marks(bufnr)
+	persist.redraw_bookmarks(bufnr, persist.get_bookmarks_by(bufnr))
+	persist.sync_buffer_bookmarks(bufnr)
+end
+
 vim.api.nvim_create_autocmd({ "BufLeave", "BufWritePost" }, {
 	callback = function(args)
 		local bufnr = tonumber(args.buf)
 		if persist.get_bookmarks_by(bufnr) ~= nil then
-			persist.update(bufnr)
-			persist.clear_buffer_ext_marks(bufnr)
-			persist.redraw_bookmarks(bufnr, persist.get_bookmarks_by(bufnr))
-			persist.sync_buffer_bookmarks(bufnr)
+			update_everything(bufnr)
 		end
 	end,
 })
@@ -202,7 +206,13 @@ end
 function M.next_item(bufnr, line_nr)
 	bufnr = bufnr or vim.api.nvim_get_current_buf()
 
-	local bookmarks = persist.get_bookmarks_by(bufnr)
+	update_everything(bufnr)
+
+	local bookmarks = persist.get_bookmarks_by(bufnr) or {}
+
+	if #bookmarks == 0 then
+		return
+	end
 
 	-- find closest bookmark after the line_nr, if exists, go to it, if not, go to first
 
@@ -222,7 +232,13 @@ end
 function M.prev_item(bufnr, line_nr)
 	bufnr = bufnr or vim.api.nvim_get_current_buf()
 
-	local bookmarks = persist.get_bookmarks_by(bufnr)
+	update_everything(bufnr)
+
+	local bookmarks = persist.get_bookmarks_by(bufnr) or {}
+
+	if #bookmarks == 0 then
+		return
+	end
 
 	local sorted_by_line_bookmarks = vim.fn.sort(bookmarks, function(a, b)
 		return a.line < b.line
