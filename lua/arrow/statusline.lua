@@ -8,24 +8,22 @@ local function show_right_index(index)
 	return config.getState("index_keys"):sub(index, index)
 end
 
-function M.is_on_arrow_file()
-	return M.in_on_arrow_file()
+function M.is_on_arrow_file(bufnr)
+    bufnr = bufnr or vim.api.nvim_get_current_buf()
+
+    local file_path
+    local bufname = vim.fn.bufname(bufnr)
+    if config.getState("global_bookmarks") == true then
+        file_path = vim.fn.fnamemodify(bufname, ":p")
+    else
+        file_path = utils.get_buffer_path(bufnr)
+    end
+
+    return persist.is_saved(file_path)
 end
 
-function M.in_on_arrow_file()
-	local filename
-
-	if config.getState("global_bookmarks") == true then
-		filename = vim.fn.expand("%:p")
-	else
-		filename = utils.get_current_buffer_path()
-	end
-
-	return persist.is_saved(filename)
-end
-
-function M.text_for_statusline(index)
-	index = index or M.in_on_arrow_file()
+function M.text_for_statusline(bufnr)
+    local index = M.is_on_arrow_file(bufnr)
 
 	if index then
 		return show_right_index(index)
@@ -34,8 +32,8 @@ function M.text_for_statusline(index)
 	end
 end
 
-function M.text_for_statusline_with_icons()
-	local index = M.in_on_arrow_file()
+function M.text_for_statusline_with_icons(bufnr)
+    local index = M.is_on_arrow_file(bufnr)
 
 	if index then
 		return "󱡁 " .. show_right_index(index)
