@@ -12,6 +12,7 @@ local call_win = -1
 local delete_mode = false
 local current_highlight = nil
 local to_delete = {}
+local spawn_col = -1
 
 local function update_everything(bufnr)
 	persist.update(bufnr)
@@ -62,13 +63,16 @@ function M.spawn_preview_window(buffer, index, bookmark, bookmark_count)
 
 	local row = height + (index - 1) * (lines_count + 2) - (bookmark_count - 1) * lines_count
 
+	local width = math.ceil(vim.o.columns / 2)
+
 	lastRow = row
+	spawn_col = width
 
 	local window_config = {
 		height = lines_count,
-		width = 120,
+		width = width,
 		row = row,
-		col = math.ceil((vim.o.columns - 120) / 2),
+		col = math.ceil((vim.o.columns - width) / 2),
 		relative = "editor",
 		border = "single",
 	}
@@ -118,6 +122,7 @@ local function reset_variables()
 	to_delete = {}
 	call_win = -1
 	delete_mode = false
+	spawn_col = -1
 
 	if current_highlight then
 		pcall(vim.api.nvim_set_hl, 0, "FloatBorder", current_highlight)
@@ -281,6 +286,8 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_wi
 
 	local lines_count = config.getState("per_buffer_config").lines
 
+	local width = math.ceil(vim.o.columns / 2)
+
 	local window_config
 
 	if #bookmarks == 0 then
@@ -298,7 +305,7 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_wi
 			height = 4,
 			width = 17,
 			row = lastRow + lines_count + 2,
-			col = math.ceil((vim.o.columns - 120) / 2),
+			col = width - spawn_col / 2,
 			style = "minimal",
 			relative = "editor",
 			border = "single",
