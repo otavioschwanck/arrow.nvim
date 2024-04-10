@@ -91,6 +91,25 @@ function M.spawn_preview_window(buffer, index, bookmark, bookmark_count)
 	vim.api.nvim_win_set_cursor(win, { bookmark.line, 0 })
 	vim.api.nvim_win_set_config(win, { title = displayIndex .. " " .. extra_title })
 	vim.api.nvim_win_set_option(win, "number", true)
+	
+	if config.getState("per_buffer_config").treesitter_context ~= nil then
+		local ctx_config = config.getState("per_buffer_config").treesitter_context
+		local shift = ctx_config.line_shift_down
+
+		local win_view = vim.fn.winsaveview()
+
+		vim.api.nvim_win_set_option(win, "scrolloff", 0)
+		vim.fn.winrestview({ topline = win_view.topline - shift })
+
+		local ok, _ = pcall(require, "nvim-treesitter")
+		if not ok then
+			vim.notify("you don't have treesitter-context installed", vim.log.levels.WARN)
+		end
+		local context, context_lines = require("treesitter-context.context").get(buffer, win)
+		vim.defer_fn(function()
+			require("treesitter-context.render").open(buffer, win, context, context_lines)
+		end, 10)
+	end
 
 	table.insert(preview_buffers, { buffer = buffer, win = win, index = index })
 end
