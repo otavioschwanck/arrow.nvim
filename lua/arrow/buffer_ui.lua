@@ -100,7 +100,7 @@ function M.spawn_preview_window(buffer, index, bookmark, bookmark_count)
 		vim.api.nvim_win_set_option(win, "scrolloff", 0)
 		vim.fn.winrestview({ topline = win_view.topline - shift })
 
-		local ok, _ = pcall(require, "nvim-treesitter")
+		local ok, _ = pcall(require, "treesitter-context")
 		if not ok then
 			vim.notify("you don't have treesitter-context installed", vim.log.levels.WARN)
 		end
