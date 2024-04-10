@@ -337,7 +337,12 @@ function M.openFile(fileNumber, previousFile)
 		end
 
 		closeMenu()
-		action(config.getState("save_key_cached") .. "/" .. fileName, vim.b.filename)
+
+		if config.getState("global_bookmarks") == true then
+			action(fileName, vim.b.filename)
+		else
+			action(config.getState("save_key_cached") .. "/" .. fileName, vim.b.filename)
+		end
 	end
 end
 

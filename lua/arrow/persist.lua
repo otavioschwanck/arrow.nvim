@@ -32,6 +32,12 @@ local function cache_file_path()
 	return save_path .. "/" .. save_key()
 end
 
+local function notify()
+	vim.api.nvim_exec_autocmds("User", {
+		pattern = "ArrowUpdate",
+	})
+end
+
 vim.g.arrow_filenames = {}
 
 function M.save(filename)
@@ -43,6 +49,7 @@ function M.save(filename)
 		M.cache_file()
 		M.load_cache_file()
 	end
+	notify()
 end
 
 function M.remove(filename)
@@ -55,6 +62,7 @@ function M.remove(filename)
 		M.cache_file()
 		M.load_cache_file()
 	end
+	notify()
 end
 
 function M.toggle(filename)
@@ -68,16 +76,28 @@ function M.toggle(filename)
 	else
 		M.save(filename)
 	end
+	notify()
 end
 
 function M.clear()
 	vim.g.arrow_filenames = {}
 	M.cache_file()
 	M.load_cache_file()
+	notify()
 end
 
 function M.is_saved(filename)
 	for i, name in ipairs(vim.g.arrow_filenames) do
+		if config.getState("relative_path") == true and config.getState("global_bookmarks") == false then
+			if not name:match("^%./") and not utils.string_contains_whitespace(name) then
+				name = "./" .. name
+			end
+
+			if not filename:match("^%./") and not utils.string_contains_whitespace(filename) then
+				filename = "./" .. filename
+			end
+		end
+
 		if name == filename then
 			return i
 		end
@@ -160,11 +180,10 @@ function M.open_cache_file()
 		cache_content = vim.fn.readfile(cache_path)
 	end
 
-	if config.getState("relative_path") == true then
+	if config.getState("relative_path") == true and config.getState("global_bookmarks") == false then
 		for i, line in ipairs(cache_content) do
 			if not line:match("^%./") and not utils.string_contains_whitespace(line) and #cache_content[i] > 1 then
 				cache_content[i] = "./" .. line
-				break
 			end
 		end
 	end

@@ -111,7 +111,12 @@ function M.join_two_arrays(tableA, tableB)
 end
 
 function M.get_current_buffer_path()
-	local absolute_buffer_path = vim.fn.expand("%:p")
+	return M.get_buffer_path(vim.api.nvim_get_current_buf())
+end
+
+function M.get_buffer_path(bufnr)
+	local bufname = vim.fn.bufname(bufnr)
+	local absolute_buffer_path = vim.fn.fnamemodify(bufname, ":p")
 
 	local save_key = config.getState("save_key_cached") or config.getState("save_key")()
 	local escaped_save_key = save_key:gsub("[%(%)%.%%%+%-%*%?%[%]%^%$]", "%%%1")
