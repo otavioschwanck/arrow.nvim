@@ -95,6 +95,16 @@ end
 
 function M.is_saved(filename)
 	for i, name in ipairs(vim.g.arrow_filenames) do
+		if config.getState("relative_path") == true and config.getState("global_bookmarks") == false then
+			if not name:match("^%./") and not utils.string_contains_whitespace(name) then
+				name = "./" .. name
+			end
+
+			if not filename:match("^%./") and not utils.string_contains_whitespace(filename) then
+				filename = "./" .. filename
+			end
+		end
+
 		if name == filename then
 			return i
 		end
