@@ -162,6 +162,7 @@ local function renderBuffer(buffer)
 	local formattedFleNames = format_file_names(fileNames)
 	
 	to_highlight = {}
+	current_index = 0
 
 	for i, fileName in ipairs(formattedFleNames) do
 		local displayIndex = i
