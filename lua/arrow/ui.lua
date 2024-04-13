@@ -160,6 +160,8 @@ local function renderBuffer(buffer)
 	local lines = { "" }
 
 	local formattedFleNames = format_file_names(fileNames)
+	
+	to_highlight = {}
 
 	for i, fileName in ipairs(formattedFleNames) do
 		local displayIndex = i
@@ -220,8 +222,8 @@ end
 local function createMenuBuffer(filename)
 	local buf = vim.api.nvim_create_buf(false, true)
 
-	vim.b.filename = filename
-	vim.b.arrow_current_mode = ""
+	vim.b[buf].filename = filename
+	vim.b[buf].arrow_current_mode = ""
 	renderBuffer(buf)
 
 	return buf
