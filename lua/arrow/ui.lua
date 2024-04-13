@@ -176,7 +176,7 @@ local function renderBuffer(buffer)
 			parsed_filename = fileNames[i]:sub(3)
 		end
 
-		if parsed_filename == vim.b.filename then
+		if parsed_filename == vim.b[buf].filename then
 			current_index = i
 		end
 
