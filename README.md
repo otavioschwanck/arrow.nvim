@@ -1,15 +1,15 @@
 # arrow.nvim
 
-Arrow.nvim is a plugin made to file bookmarks using a single UI (and single keymap). 
+Arrow.nvim is a plugin made to bookmarks files (like harpoon) using a single UI (and single keymap). 
 
 Arrow can be customized for everyone needs.
 
-Arrow also provides per buffer bookmarks that will can quickly jump to them. (And their position is automatically updated/ persisted while you modify the file)
+Arrow also provides per buffer bookmarks that will can quickly jump to them. (And their position is automatically updated / persisted while you modify the file)
 
 ### Per Project / Global bookmarksL:
 ![arrow.nvim](https://i.imgur.com/mPdSC5s.png)
 ![arrow.nvim_gif](https://i.imgur.com/LcvG406.gif)
-![arrow_buffers](https://i.imgur.com/lhG5555.gif)
+![arrow_buffers](https://i.imgur.com/Lll9YvY.gif)
 
 ## Installation
 
