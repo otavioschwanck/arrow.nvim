@@ -4,6 +4,7 @@ local config = require("arrow.config")
 local utils = require("arrow.utils")
 local ui = require("arrow.ui")
 local persist = require("arrow.persist")
+local buffer_persist = require("arrow.buffer_persist")
 local git = require("arrow.git")
 local commands = require("arrow.commands")
 local save_keys = require("arrow.save_keys")
@@ -17,6 +18,11 @@ function M.setup(opts)
 	vim.cmd("highlight default link ArrowDeleteMode DiagnosticError")
 
 	opts = opts or {}
+
+	local default_per_buffer_config = {
+		lines = 4,
+		sort_automatically = true,
+	}
 
 	local default_mappings = {
 		edit = "e",
@@ -43,7 +49,13 @@ function M.setup(opts)
 
 	config.setState("window", utils.join_two_keys_tables(default_window_config, opts.window or {}))
 
+	config.setState(
+		"per_buffer_config",
+		utils.join_two_keys_tables(default_per_buffer_config, opts.per_buffer_config or {})
+	)
+
 	local leader_key = opts.leader_key or ";"
+	local buffer_leader_key = opts.buffer_leader_key or "m" -- # TODO: Don't set m automatically (is neovim native already, just for tests)
 
 	local actions = opts.custom_actions or {}
 
@@ -63,6 +75,7 @@ function M.setup(opts)
 		return vim.fn.stdpath("cache") .. "/arrow"
 	end)
 	config.setState("leader_key", leader_key)
+	config.setState("buffer_leader_key", buffer_leader_key)
 	config.setState("always_show_path", opts.always_show_path or false)
 	config.setState("show_icons", opts.show_icons)
 	config.setState("index_keys", opts.index_keys or "123456789zcbnmZXVBNM,afghjklAFGHJKLwrtyuiopWRTYUIOP")
@@ -77,6 +90,10 @@ function M.setup(opts)
 
 	if leader_key then
 		vim.keymap.set("n", leader_key, ui.openMenu, { noremap = true, silent = true })
+	end
+
+	if buffer_leader_key then
+		vim.keymap.set("n", buffer_leader_key, require("arrow.buffer_ui").openMenu, { noremap = true, silent = true })
 	end
 
 	local default_full_path_list = {
@@ -160,6 +177,14 @@ function M.setup(opts)
 			config.setState("save_key_cached", config.getState("save_key")())
 		end,
 		desc = "load cache file on DirChanged",
+		group = "arrow",
+	})
+
+	vim.api.nvim_create_autocmd({ "BufReadPost" }, {
+		callback = function()
+			buffer_persist.load_buffer_bookmarks()
+		end,
+		desc = "load current file cache",
 		group = "arrow",
 	})
 

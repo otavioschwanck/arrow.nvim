@@ -1,10 +1,15 @@
 # arrow.nvim
 
-Arrow.nvim is a plugin made to manage quick file bookmarks using a single UI. You can just map one
-key and have everything you need to get started.
+Arrow.nvim is a plugin made to file bookmarks using a single UI (and single keymap). 
 
+Arrow can be customized for everyone needs.
+
+Arrow also provides per buffer bookmarks that will can quickly jump to them. (And their position is automatically updated/ persisted while you modify the file)
+
+### Per Project / Global bookmarksL:
 ![arrow.nvim](https://i.imgur.com/mPdSC5s.png)
 ![arrow.nvim_gif](https://i.imgur.com/LcvG406.gif)
+![arrow_buffers](https://i.imgur.com/lhG5555.gif)
 
 ## Installation
 
@@ -15,7 +20,8 @@ return {
   "otavioschwanck/arrow.nvim",
   opts = {
     show_icons = true,
-    leader_key = ';' -- Recommended to be a single key
+    leader_key = ';', -- Recommended to be a single key
+    buffer_leader_key = 'm', -- Per Buffer Mappings
   }
 }
 ```
@@ -27,6 +33,7 @@ use { 'otavioschwanck/arrow.nvim', config = function()
   require('arrow').setup({
     show_icons = true,
     leader_key = ';' -- Recommended to be a single key
+    buffer_leader_key = 'm', -- Per Buffer Mappings
   })
 end }
 ```
@@ -80,7 +87,12 @@ Just press the leader_key set on setup and follow you heart. (Is that easy)
     row = "auto",
     col = "auto",
     border = "double",
-  }
+  },
+  per_buffer_config = {
+    lines = 4, -- Number of lines showed on preview.
+    sort_automatically = true, -- Auto sort buffer marks.
+    treesitter_context = nil, -- it can be { line_shift_down = 2 }
+  },
   separate_save_and_remove = false, -- if true, will remove the toggle and create the save/remove keymaps.
   leader_key = ";",
   save_key = "cwd", -- what will be used as root to save the bookmarks. Can be also `git_root`.
@@ -185,6 +197,7 @@ function Builder:format_line(indent_markers, arrows, icon, name, node)
   return line
 end
 ```
+
 </details>
 
 ## Highlights
@@ -196,7 +209,8 @@ end
 
 ## Working with sessions plugins
 
-If you have any error using arrow with a session plugin, like on mini.sessions, add this to the post load session hook:
+If you have any error using arrow with a session plugin,
+like on mini.sessions, add this to the post load session hook:
 
 ```lua
 require("arrow.git").refresh_git_branch() -- only if separated_by_branch is true
@@ -204,6 +218,11 @@ require("arrow.persist").load_cache_file()
 ```
 
 Obs: persistence.nvim works fine with arrow.
+
+## Special Contributors
+
+- ![xzbdmw](https://github.com/xzbdmw) - Had the idea of per buffer bookmarks and
+helped me to implement it.
 
 ### Do you like my work? Please, buy me a coffee
 

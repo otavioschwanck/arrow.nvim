@@ -382,6 +382,7 @@ function M.getWindowConfig()
 	}
 
 	local is_empty = #vim.g.arrow_filenames == 0
+
 	if is_empty and show_handbook then
 		current_config.height = 5
 		current_config.width = 18
@@ -408,8 +409,10 @@ function M.getWindowConfig()
 	return res
 end
 
-function M.openMenu()
+function M.openMenu(bufnr)
 	git.refresh_git_branch()
+
+	local call_buffer = bufnr or vim.api.nvim_get_current_buf()
 
 	if vim.g.arrow_filenames == 0 then
 		persist.load_cache_file()
@@ -438,6 +441,15 @@ function M.openMenu()
 	local menuKeymapOpts = { noremap = true, silent = true, buffer = menuBuf, nowait = true }
 
 	vim.keymap.set("n", config.getState("leader_key"), closeMenu, menuKeymapOpts)
+
+	vim.keymap.set("n", config.getState("buffer_leader_key"), function()
+		closeMenu()
+
+		vim.schedule(function()
+			require("arrow.buffer_ui").openMenu(call_buffer)
+		end)
+	end, menuKeymapOpts)
+
 	vim.keymap.set("n", mappings.quit, closeMenu, menuKeymapOpts)
 	vim.keymap.set("n", mappings.edit, function()
 		closeMenu()
@@ -532,7 +544,7 @@ function M.openMenu()
 			vim.schedule(function()
 				local old_hl = hl
 				old_hl.blend = 0
-				vim.api.nvim_set_hl(0, "Cursor", old_hl)
+				pcall(vim.api.nvim_set_hl, 0, "Cursor", old_hl)
 
 				vim.opt.guicursor:remove("a:Cursor/lCursor")
 			end)
