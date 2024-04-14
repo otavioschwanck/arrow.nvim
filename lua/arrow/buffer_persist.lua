@@ -8,15 +8,6 @@ local ns = vim.api.nvim_create_namespace("arrow_bookmarks")
 M.local_bookmarks = {}
 M.last_sync_bookmarks = {}
 
-vim.api.nvim_create_autocmd("VimLeavePre", {
-	callback = function()
-		for bufnr, _ in pairs(M.local_bookmarks) do
-			M.update(bufnr)
-			M.sync_buffer_bookmarks(bufnr)
-		end
-	end,
-})
-
 local function save_key(filename)
 	return utils.normalize_path_to_filename(filename)
 end
