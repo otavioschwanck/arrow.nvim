@@ -412,6 +412,7 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_wi
 	vim.api.nvim_create_autocmd("BufLeave", {
 		buffer = 0,
 		desc = "Disable Cursor",
+		once = true,
 		callback = function()
 			vim.cmd("highlight clear Cursor")
 
