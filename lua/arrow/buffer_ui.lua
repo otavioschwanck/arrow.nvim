@@ -91,7 +91,7 @@ function M.spawn_preview_window(buffer, index, bookmark, bookmark_count)
 	vim.api.nvim_win_set_cursor(win, { bookmark.line, 0 })
 	vim.api.nvim_win_set_config(win, { title = displayIndex .. " " .. extra_title })
 	vim.api.nvim_win_set_option(win, "number", true)
-	
+
 	local ctx_config = config.getState("per_buffer_config").treesitter_context
 	if ctx_config ~= nil and ctx_config.line_shift_down ~= nil then
 		local shift = ctx_config.line_shift_down
@@ -223,7 +223,6 @@ local function toggle_delete_mode(action_buffer)
 		local arrow_delete_mode = vim.api.nvim_get_hl_by_name("ArrowDeleteMode", true)
 
 		vim.api.nvim_set_hl(0, "FloatBorder", { fg = arrow_delete_mode.bg or "red" })
-		pcall(vim.api.nvim_set_hl, 0, "Cursor")
 	end
 
 	render_highlights(action_buffer)
@@ -298,12 +297,8 @@ end
 function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_window, index)
 	local actions_buffer = vim.api.nvim_create_buf(false, true)
 
-	local hl = vim.api.nvim_get_hl_by_name("Cursor", true)
-	hl.blend = 100
-
-	vim.opt.guicursor:append("a:Cursor/lCursor")
-
-	pcall(vim.api.nvim_set_hl, 0, "Cursor", hl)
+	vim.api.nvim_set_hl(0, "ArrowCursor", { bg = "#ffffff", blend = 100 })
+	vim.opt.guicursor:append("a:ArrowCursor/ArrowCursor")
 
 	local lines_count = config.getState("per_buffer_config").lines
 
@@ -413,21 +408,17 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_wi
 	vim.api.nvim_create_autocmd("BufLeave", {
 		buffer = 0,
 		desc = "Disable Cursor",
+		once = true,
 		callback = function()
-			vim.cmd("highlight clear Cursor")
-
 			close_preview_windows()
 
 			vim.schedule(function()
-				local old_hl = hl
-				old_hl.blend = 0
-				pcall(vim.api.nvim_set_hl, 0, "Cursor", old_hl)
-
 				if vim.api.nvim_buf_is_valid(actions_buffer) then
 					closeMenu(actions_buffer, call_buffer)
 				end
 
-				vim.opt.guicursor:remove("a:Cursor/lCursor")
+				vim.opt.guicursor:remove("a:ArrowCursor/ArrowCursor")
+				vim.cmd("highlight clear ArrowCursor")
 			end)
 		end,
 	})

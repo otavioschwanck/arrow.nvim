@@ -160,7 +160,7 @@ local function renderBuffer(buffer)
 	local lines = { "" }
 
 	local formattedFleNames = format_file_names(fileNames)
-	
+
 	to_highlight = {}
 	current_index = 0
 
@@ -530,27 +530,19 @@ function M.openMenu(bufnr)
 		render_highlights(menuBuf)
 	end, menuKeymapOpts)
 
-	local hl = vim.api.nvim_get_hl_by_name("Cursor", true)
-	hl.blend = 100
-
-	vim.opt.guicursor:append("a:Cursor/lCursor")
-	vim.api.nvim_set_hl(0, "Cursor", hl)
+	-- dumb color is needed for the highlight group to be applied
+	vim.api.nvim_set_hl(0, "ArrowCursor", { bg = "#ffffff", blend = 100 })
+	vim.opt.guicursor:append("a:ArrowCursor/ArrowCursor")
 
 	vim.api.nvim_create_autocmd("BufLeave", {
 		buffer = 0,
 		desc = "Disable Cursor",
+		once = true,
 		callback = function()
 			current_index = 0
 
-			vim.cmd("highlight clear Cursor")
-
-			vim.schedule(function()
-				local old_hl = hl
-				old_hl.blend = 0
-				pcall(vim.api.nvim_set_hl, 0, "Cursor", old_hl)
-
-				vim.opt.guicursor:remove("a:Cursor/lCursor")
-			end)
+			vim.opt.guicursor:remove("a:ArrowCursor/ArrowCursor")
+			vim.cmd("highlight clear ArrowCursor")
 		end,
 	})
 
