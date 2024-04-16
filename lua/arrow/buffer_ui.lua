@@ -91,7 +91,7 @@ function M.spawn_preview_window(buffer, index, bookmark, bookmark_count)
 	vim.api.nvim_win_set_cursor(win, { bookmark.line, 0 })
 	vim.api.nvim_win_set_config(win, { title = displayIndex .. " " .. extra_title })
 	vim.api.nvim_win_set_option(win, "number", true)
-	
+
 	local ctx_config = config.getState("per_buffer_config").treesitter_context
 	if ctx_config ~= nil and ctx_config.line_shift_down ~= nil then
 		local shift = ctx_config.line_shift_down
@@ -223,7 +223,6 @@ local function toggle_delete_mode(action_buffer)
 		local arrow_delete_mode = vim.api.nvim_get_hl_by_name("ArrowDeleteMode", true)
 
 		vim.api.nvim_set_hl(0, "FloatBorder", { fg = arrow_delete_mode.bg or "red" })
-		pcall(vim.api.nvim_set_hl, 0, "Cursor")
 	end
 
 	render_highlights(action_buffer)
