@@ -539,6 +539,7 @@ function M.openMenu(bufnr)
 	vim.api.nvim_create_autocmd("BufLeave", {
 		buffer = 0,
 		desc = "Disable Cursor",
+		once = true,
 		callback = function()
 			current_index = 0
 
