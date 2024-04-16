@@ -297,12 +297,8 @@ end
 function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_window, index)
 	local actions_buffer = vim.api.nvim_create_buf(false, true)
 
-	local hl = vim.api.nvim_get_hl_by_name("Cursor", true)
-	hl.blend = 100
-
-	vim.opt.guicursor:append("a:Cursor/lCursor")
-
-	pcall(vim.api.nvim_set_hl, 0, "Cursor", hl)
+	vim.api.nvim_set_hl(0, "ArrowCursor", { bg = "#ffffff", blend = 100 })
+	vim.opt.guicursor:append("a:ArrowCursor/ArrowCursor")
 
 	local lines_count = config.getState("per_buffer_config").lines
 
@@ -414,20 +410,15 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_wi
 		desc = "Disable Cursor",
 		once = true,
 		callback = function()
-			vim.cmd("highlight clear Cursor")
-
 			close_preview_windows()
 
 			vim.schedule(function()
-				local old_hl = hl
-				old_hl.blend = 0
-				pcall(vim.api.nvim_set_hl, 0, "Cursor", old_hl)
-
 				if vim.api.nvim_buf_is_valid(actions_buffer) then
 					closeMenu(actions_buffer, call_buffer)
 				end
 
-				vim.opt.guicursor:remove("a:Cursor/lCursor")
+				vim.opt.guicursor:remove("a:ArrowCursor/ArrowCursor")
+				vim.cmd("highlight clear ArrowCursor")
 			end)
 		end,
 	})
