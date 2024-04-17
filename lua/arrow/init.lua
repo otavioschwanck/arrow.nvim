@@ -55,7 +55,7 @@ function M.setup(opts)
 	)
 
 	local leader_key = opts.leader_key or ";"
-	local buffer_leader_key = opts.buffer_leader_key or "m" -- # TODO: Don't set m automatically (is neovim native already, just for tests)
+	local buffer_leader_key = opts.buffer_leader_key
 
 	local actions = opts.custom_actions or {}
 
