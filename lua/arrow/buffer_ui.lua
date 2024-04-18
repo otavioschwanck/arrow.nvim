@@ -297,9 +297,6 @@ end
 function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_window, index)
 	local actions_buffer = vim.api.nvim_create_buf(false, true)
 
-	vim.api.nvim_set_hl(0, "ArrowCursor", { bg = "#ffffff", blend = 100 })
-	vim.opt.guicursor:append("a:ArrowCursor/ArrowCursor")
-
 	local lines_count = config.getState("per_buffer_config").lines
 
 	local width = math.ceil(vim.o.columns / 2)
@@ -405,20 +402,22 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_wi
 		end, menuKeymapOpts)
 	end
 
+	vim.api.nvim_set_hl(0, "ArrowCursor", { nocombine = true, blend = 100 })
+	vim.opt.guicursor:append("a:ArrowCursor/ArrowCursor")
+
 	vim.api.nvim_create_autocmd("BufLeave", {
 		buffer = 0,
 		desc = "Disable Cursor",
 		once = true,
 		callback = function()
 			close_preview_windows()
+			if vim.api.nvim_buf_is_valid(actions_buffer) then
+				closeMenu(actions_buffer, call_buffer)
+			end
 
+			vim.cmd("highlight clear ArrowCursor")
 			vim.schedule(function()
-				if vim.api.nvim_buf_is_valid(actions_buffer) then
-					closeMenu(actions_buffer, call_buffer)
-				end
-
 				vim.opt.guicursor:remove("a:ArrowCursor/ArrowCursor")
-				vim.cmd("highlight clear ArrowCursor")
 			end)
 		end,
 	})
