@@ -447,7 +447,7 @@ function M.openMenu(bufnr)
 
 	local buffer_leader_key = config.getState("buffer_leader_key")
 	if buffer_leader_key then
-		vim.keymap.set("n", config.getState("buffer_leader_key"), function()
+		vim.keymap.set("n", buffer_leader_key, function()
 			closeMenu()
 
 			vim.schedule(function()
