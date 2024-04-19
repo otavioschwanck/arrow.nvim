@@ -445,13 +445,16 @@ function M.openMenu(bufnr)
 
 	vim.keymap.set("n", config.getState("leader_key"), closeMenu, menuKeymapOpts)
 
-	vim.keymap.set("n", config.getState("buffer_leader_key"), function()
-		closeMenu()
+	local buffer_leader_key = config.getState("buffer_leader_key")
+	if buffer_leader_key then
+		vim.keymap.set("n", buffer_leader_key, function()
+			closeMenu()
 
-		vim.schedule(function()
-			require("arrow.buffer_ui").openMenu(call_buffer)
-		end)
-	end, menuKeymapOpts)
+			vim.schedule(function()
+				require("arrow.buffer_ui").openMenu(call_buffer)
+			end)
+		end, menuKeymapOpts)
+	end
 
 	vim.keymap.set("n", mappings.quit, closeMenu, menuKeymapOpts)
 	vim.keymap.set("n", mappings.edit, function()
@@ -530,8 +533,7 @@ function M.openMenu(bufnr)
 		render_highlights(menuBuf)
 	end, menuKeymapOpts)
 
-	-- dumb color is needed for the highlight group to be applied
-	vim.api.nvim_set_hl(0, "ArrowCursor", { bg = "#ffffff", blend = 100 })
+	vim.api.nvim_set_hl(0, "ArrowCursor", { nocombine = true, blend = 100 })
 	vim.opt.guicursor:append("a:ArrowCursor/ArrowCursor")
 
 	vim.api.nvim_create_autocmd("BufLeave", {
@@ -541,8 +543,10 @@ function M.openMenu(bufnr)
 		callback = function()
 			current_index = 0
 
-			vim.opt.guicursor:remove("a:ArrowCursor/ArrowCursor")
 			vim.cmd("highlight clear ArrowCursor")
+			vim.schedule(function()
+				vim.opt.guicursor:remove("a:ArrowCursor/ArrowCursor")
+			end)
 		end,
 	})
 
