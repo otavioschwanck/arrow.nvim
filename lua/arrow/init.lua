@@ -94,6 +94,10 @@ function M.setup(opts)
 
 	if buffer_leader_key then
 		vim.keymap.set("n", buffer_leader_key, require("arrow.buffer_ui").openMenu, { noremap = true, silent = true })
+		if opts.per_buffer_config.satellite then
+			config.setState("satellite_config", opts.per_buffer_config.satellite)
+			require("arrow.integration.satellite")
+		end
 	end
 
 	local default_full_path_list = {
