@@ -96,6 +96,7 @@ Just press the leader_key set on setup and follow you heart. (Is that easy)
       overlap = true,
       priority = 1000,
     },
+    zindex = 10,
     treesitter_context = nil, -- it can be { line_shift_down = 2 }, currently not usable, for detail see https://github.com/otavioschwanck/arrow.nvim/pull/43#issue-2236320268
   },
   separate_save_and_remove = false, -- if true, will remove the toggle and create the save/remove keymaps.
