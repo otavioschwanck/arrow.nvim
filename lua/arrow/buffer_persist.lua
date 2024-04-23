@@ -8,6 +8,12 @@ local ns = vim.api.nvim_create_namespace("arrow_bookmarks")
 M.local_bookmarks = {}
 M.last_sync_bookmarks = {}
 
+local function notify()
+	vim.api.nvim_exec_autocmds("User", {
+		pattern = "ArrowMarkUpdate",
+	})
+end
+
 local function save_key(filename)
 	return utils.normalize_path_to_filename(filename)
 end
@@ -32,6 +38,7 @@ function M.clear_buffer_ext_marks(bufnr)
 	bufnr = bufnr or vim.api.nvim_get_current_buf()
 
 	vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
+	notify()
 end
 
 function M.redraw_bookmarks(bufnr, result)
@@ -48,6 +55,7 @@ function M.redraw_bookmarks(bufnr, result)
 
 		res.ext_id = id
 	end
+	notify()
 end
 
 function M.load_buffer_bookmarks(bufnr)
@@ -84,6 +92,7 @@ function M.load_buffer_bookmarks(bufnr)
 			M.local_bookmarks[bufnr] = {}
 		end
 	end
+	notify()
 end
 
 function M.sync_buffer_bookmarks(bufnr)
@@ -123,7 +132,7 @@ function M.sync_buffer_bookmarks(bufnr)
 		file:flush()
 
 		M.last_sync_bookmarks[bufnr] = M.local_bookmarks[bufnr]
-
+		notify()
 		return true
 	end
 
@@ -199,6 +208,7 @@ function M.update(bufnr)
 	end
 
 	M.local_bookmarks[bufnr] = set
+	notify()
 end
 
 function M.save(bufnr, line_nr, col_nr)
