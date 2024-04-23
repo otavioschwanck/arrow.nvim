@@ -132,7 +132,8 @@ statusline.text_for_statusline_with_icons() -- Same, but with an bow and arrow i
 ## NvimTree
 Show arrow marks in front of filename
 
-<img width="343" alt="截屏2024-03-25 04 14 51" src="https://private-user-images.githubusercontent.com/97848247/318196350-7c71a880-0920-46d0-a1d4-14b72d152c5e.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MTE4MDUyMTAsIm5iZiI6MTcxMTgwNDkxMCwicGF0aCI6Ii85Nzg0ODI0Ny8zMTgxOTYzNTAtN2M3MWE4ODAtMDkyMC00NmQwLWExZDQtMTRiNzJkMTUyYzVlLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDAzMzAlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwMzMwVDEzMjE1MFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTUyOTQ3OGJjN2QzM2VkYjIxNWQyMTQ0ZWI4YTAyZjlkNWMwZjdlN2FjODM3NGU1YzBmNWY2NzJhNDA3YjMyZDQmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.U1OsWMsE0WQB_kT0ZjZlcr1UD7eU1Jrz25NXOvKUmZ0">
+<img width="346" alt="aaaaaaaaaa" src="https://github.com/xzbdmw/arrow.nvim/assets/97848247/5357e7ce-8ec7-4e43-a0cf-0856240bbb9f">
+
 
 A small patch is needed.
 <details>
@@ -163,25 +164,17 @@ function Builder:format_line(indent_markers, arrows, icon, name, node)
   end
 
   local line = { indent_markers, arrows }
+
   local arrow_index = 1
-  local function extractFilenames(paths)
-    local filenames = {}
-    for _, path in ipairs(paths) do
-      local filename = path:match "([^/]+)$"
-      table.insert(filenames, filename)
-    end
-    return filenames
-  end
   local arrow_filenames = vim.g.arrow_filenames
   if arrow_filenames then
-    local extracted_arrow_filenames = extractFilenames(arrow_filenames)
-    for i, filename in ipairs(extracted_arrow_filenames) do
-      if filename == node.name then
+    for i, filename in ipairs(arrow_filenames) do
+      if string.sub(node.absolute_path, -#filename) == filename then
         local statusline = require "arrow.statusline"
-        arrow_index = statusline.text_for_statusline(i)
+        arrow_index = statusline.text_for_statusline(_, i)
         line[1].str = string.sub(line[1].str, 1, -3)
         line[2].str = "(" .. arrow_index .. ") "
-        line[2].hl = { "ArrowFileIndex" }
+        line[2].hl = { "ArrowIcon" }
         break
       end
     end
