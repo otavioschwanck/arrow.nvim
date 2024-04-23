@@ -174,7 +174,7 @@ function Builder:format_line(indent_markers, arrows, icon, name, node)
         arrow_index = statusline.text_for_statusline(_, i)
         line[1].str = string.sub(line[1].str, 1, -3)
         line[2].str = "(" .. arrow_index .. ") "
-        line[2].hl = { "ArrowIcon" }
+        line[2].hl = { "ArrowFileIndex" }
         break
       end
     end
