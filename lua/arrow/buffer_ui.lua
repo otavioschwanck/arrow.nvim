@@ -64,6 +64,8 @@ function M.spawn_preview_window(buffer, index, bookmark, bookmark_count)
 	local row = height + (index - 1) * (lines_count + 2) - (bookmark_count - 1) * lines_count
 
 	local width = math.ceil(vim.o.columns / 2)
+	
+	local zindex = config.getState("buffer_mark_zindex")
 
 	lastRow = row
 	spawn_col = width
@@ -75,7 +77,7 @@ function M.spawn_preview_window(buffer, index, bookmark, bookmark_count)
 		col = math.ceil((vim.o.columns - width) / 2),
 		relative = "editor",
 		border = "single",
-		zindex = 10
+		zindex = zindex or 50,
 	}
 
 	local displayIndex = config.getState("index_keys"):sub(index, index)
