@@ -91,7 +91,12 @@ Just press the leader_key set on setup and follow you heart. (Is that easy)
   per_buffer_config = {
     lines = 4, -- Number of lines showed on preview.
     sort_automatically = true, -- Auto sort buffer marks.
-    treesitter_context = nil, -- it can be { line_shift_down = 2 }
+    satellite = { -- defualt to nil, display arrow index in scrollbar at every update
+      enable = false,
+      overlap = true,
+      priority = 1000,
+    },
+    treesitter_context = nil, -- it can be { line_shift_down = 2 }, currently not usable unless you try this branch:https://github.com/nvim-treesitter/nvim-treesitter-context/pull/419 which add multi-window support
   },
   separate_save_and_remove = false, -- if true, will remove the toggle and create the save/remove keymaps.
   leader_key = ";",
