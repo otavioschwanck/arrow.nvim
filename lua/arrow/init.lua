@@ -22,7 +22,6 @@ function M.setup(opts)
 	local default_per_buffer_config = {
 		lines = 4,
 		sort_automatically = true,
-		zindex = 50,
 	}
 
 	local default_mappings = {
@@ -97,7 +96,7 @@ function M.setup(opts)
 	if buffer_leader_key then
 		vim.keymap.set("n", buffer_leader_key, require("arrow.buffer_ui").openMenu, { noremap = true, silent = true })
 
-		local b_config = opts.per_buffer_config
+		local b_config = config.getState("per_buffer_config")
 		if b_config.zindex then
 			config.setState("buffer_mark_zindex", b_config.zindex)
 		end
