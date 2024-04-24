@@ -22,6 +22,7 @@ function M.setup(opts)
 	local default_per_buffer_config = {
 		lines = 4,
 		sort_automatically = true,
+		zindex = 50,
 	}
 
 	local default_mappings = {
