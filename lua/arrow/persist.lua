@@ -131,8 +131,14 @@ end
 function M.go_to(index)
 	local filename = vim.g.arrow_filenames[index]
 
-	if filename then
+	if not filename then
+		return
+	end
+
+	if config.getState("global_bookmarks") == true or config.getState("save_key_name") == "cwd" then
 		vim.cmd(":edit " .. filename)
+	else
+		vim.cmd(":edit " .. config.getState("save_key_cached") .. "/" .. filename)
 	end
 end
 
