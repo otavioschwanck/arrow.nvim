@@ -310,8 +310,8 @@ local function render_highlights(buffer)
 end
 
 -- Function to open the selected file
-function M.openFile(fileNumber, previousFile)
-	local fileName = fileNames[fileNumber]
+function M.openFile(fileNumber)
+	local fileName = vim.g.arrow_filenames[fileNumber]
 
 	if vim.b.arrow_current_mode == "delete_mode" then
 		persist.remove(fileName)
@@ -341,7 +341,7 @@ function M.openFile(fileNumber, previousFile)
 
 		closeMenu()
 
-		if config.getState("global_bookmarks") == true then
+		if config.getState("global_bookmarks") == true or config.getState("save_key_name") == "cwd" then
 			action(fileName, vim.b.filename)
 		else
 			action(config.getState("save_key_cached") .. "/" .. fileName, vim.b.filename)

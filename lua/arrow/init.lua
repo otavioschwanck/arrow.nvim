@@ -86,6 +86,7 @@ function M.setup(opts)
 	config.setState("separate_save_and_remove", opts.separate_save_and_remove or false)
 
 	config.setState("save_key", save_keys[opts.save_key] or save_keys.cwd)
+	config.setState("save_key_name", opts.save_key or "cwd")
 	config.setState("save_key_cached", config.getState("save_key")())
 
 	if leader_key then
