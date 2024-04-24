@@ -64,6 +64,8 @@ function M.spawn_preview_window(buffer, index, bookmark, bookmark_count)
 	local row = height + (index - 1) * (lines_count + 2) - (bookmark_count - 1) * lines_count
 
 	local width = math.ceil(vim.o.columns / 2)
+	
+	local zindex = config.getState("buffer_mark_zindex")
 
 	lastRow = row
 	spawn_col = width
@@ -75,6 +77,7 @@ function M.spawn_preview_window(buffer, index, bookmark, bookmark_count)
 		col = math.ceil((vim.o.columns - width) / 2),
 		relative = "editor",
 		border = "single",
+		zindex = zindex or 50,
 	}
 
 	local displayIndex = config.getState("index_keys"):sub(index, index)
@@ -92,6 +95,8 @@ function M.spawn_preview_window(buffer, index, bookmark, bookmark_count)
 	vim.api.nvim_win_set_config(win, { title = displayIndex .. " " .. extra_title })
 	vim.api.nvim_win_set_option(win, "number", true)
 
+	table.insert(preview_buffers, { buffer = buffer, win = win, index = index })
+
 	local ctx_config = config.getState("per_buffer_config").treesitter_context
 	if ctx_config ~= nil and ctx_config.line_shift_down ~= nil then
 		local shift = ctx_config.line_shift_down
@@ -103,6 +108,7 @@ function M.spawn_preview_window(buffer, index, bookmark, bookmark_count)
 		local ok, _ = pcall(require, "treesitter-context")
 		if not ok then
 			vim.notify("you don't have treesitter-context installed", vim.log.levels.WARN)
+			return
 		end
 
 		local context, context_lines = require("treesitter-context.context").get(buffer, win)
@@ -112,8 +118,6 @@ function M.spawn_preview_window(buffer, index, bookmark, bookmark_count)
 			end, 10)
 		end
 	end
-
-	table.insert(preview_buffers, { buffer = buffer, win = win, index = index })
 end
 
 local function remove_preview_buffer_by_index(index)
