@@ -197,6 +197,17 @@ function M.setup(opts)
 		desc = "load current file cache",
 		group = "arrow",
 	})
+	
+	vim.api.nvim_create_autocmd({ "User" }, {
+		pattern = "LazyLoad",
+		callback = function(data)
+			if data.data == "arrow.nvim" then
+				buffer_persist.load_buffer_bookmarks()
+			end
+		end,
+		desc = "load current file cache on lazy load",
+		group = "arrow",
+	})
 
 	commands.setup()
 end
