@@ -13,12 +13,14 @@ local handler = {
 }
 
 local config = arrow_config.getState("satellite_config")
+local have_setup = false
+
 if config.enable == false then
 	return
 end
 
-function handler.setup(config0, update)
-	config = vim.tbl_deep_extend("force", config, config0)
+function handler.setup(user_config, update)
+	config = vim.tbl_deep_extend("force", config, user_config)
 	handler.config = config
 	local group = api.nvim_create_augroup("satellite_arrow_marks", {})
 	api.nvim_create_autocmd("User", {
@@ -26,9 +28,20 @@ function handler.setup(config0, update)
 		pattern = "ArrowMarkUpdate",
 		callback = vim.schedule_wrap(update),
 	})
+	have_setup = true
 end
 
 function handler.update(bufnr, winid)
+	if not have_setup then
+		handler.config = config
+		local group = api.nvim_create_augroup("satellite_arrow_marks", {})
+		api.nvim_create_autocmd("User", {
+			group = group,
+			pattern = "ArrowMarkUpdate",
+			callback = vim.schedule_wrap(require("satellite.view").refresh_bars),
+		})
+		have_setup = true
+	end
 	local ret = {}
 
 	local marks = persist.get_bookmarks_by(bufnr)
