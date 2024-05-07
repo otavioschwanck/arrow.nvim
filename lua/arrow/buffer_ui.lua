@@ -246,7 +246,7 @@ function M.next_item(bufnr, line_nr)
 	-- find closest bookmark after the line_nr, if exists, go to it, if not, go to first
 
 	local sorted_by_line_bookmarks = vim.fn.sort(bookmarks, function(a, b)
-		return a.line > b.line
+		return a.line - b.line
 	end)
 
 	for _, bookmark in ipairs(sorted_by_line_bookmarks) do
@@ -270,7 +270,7 @@ function M.prev_item(bufnr, line_nr)
 	end
 
 	local sorted_by_line_bookmarks = vim.fn.sort(bookmarks, function(a, b)
-		return a.line < b.line
+		return b.line - a.line
 	end)
 
 	for _, bookmark in ipairs(sorted_by_line_bookmarks) do
@@ -279,7 +279,7 @@ function M.prev_item(bufnr, line_nr)
 		end
 	end
 
-	go_to_bookmark(sorted_by_line_bookmarks[#sorted_by_line_bookmarks])
+	go_to_bookmark(sorted_by_line_bookmarks[1])
 end
 
 function M.toggle_line(call_buffer, line_nr, col_nr)
