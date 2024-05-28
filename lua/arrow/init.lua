@@ -90,13 +90,19 @@ function M.setup(opts)
 	config.setState("save_key_cached", config.getState("save_key")())
 
 	if leader_key then
-		vim.keymap.set("n", leader_key, ui.openMenu, { noremap = true, silent = true })
+		vim.keymap.set("n", leader_key, ui.openMenu, { noremap = true, silent = true, nowait = true })
 	end
 
 	if buffer_leader_key then
-		vim.keymap.set("n", buffer_leader_key, require("arrow.buffer_ui").openMenu, { noremap = true, silent = true })
+		vim.keymap.set(
+			"n",
+			buffer_leader_key,
+			require("arrow.buffer_ui").openMenu,
+			{ noremap = true, silent = true, nowait = true }
+		)
 
 		local b_config = config.getState("per_buffer_config")
+
 		if b_config.zindex then
 			config.setState("buffer_mark_zindex", b_config.zindex)
 		end
@@ -197,7 +203,7 @@ function M.setup(opts)
 		desc = "load current file cache",
 		group = "arrow",
 	})
-	
+
 	vim.api.nvim_create_autocmd({ "User" }, {
 		pattern = "LazyLoad",
 		callback = function(data)
