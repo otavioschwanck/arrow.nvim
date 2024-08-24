@@ -90,7 +90,7 @@ function M.setup(opts)
 	config.setState("save_key_cached", config.getState("save_key")())
 
 	if leader_key then
-		vim.keymap.set("n", leader_key, ui.openMenu, { noremap = true, silent = true, nowait = true })
+		vim.keymap.set("n", leader_key, ui.openMenu, { noremap = true, silent = true, nowait = true, desc = "Arrow File Mappings" })
 	end
 
 	if buffer_leader_key then
@@ -98,7 +98,7 @@ function M.setup(opts)
 			"n",
 			buffer_leader_key,
 			require("arrow.buffer_ui").openMenu,
-			{ noremap = true, silent = true, nowait = true }
+			{ noremap = true, silent = true, nowait = true, desc = "Arrow Buffer Mappings" }
 		)
 
 		local b_config = config.getState("per_buffer_config")
