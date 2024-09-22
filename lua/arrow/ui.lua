@@ -341,7 +341,11 @@ function M.openFile(fileNumber)
 
 		closeMenu()
 
-		if config.getState("global_bookmarks") == true or config.getState("save_key_name") == "cwd" then
+		if
+			config.getState("global_bookmarks") == true
+			or config.getState("save_key_name") == "cwd"
+			or config.getState("save_key_name") == "git_root_bare"
+		then
 			action(fileName, vim.b.filename)
 		else
 			action(config.getState("save_key_cached") .. "/" .. fileName, vim.b.filename)
