@@ -79,7 +79,7 @@ function M.load_buffer_bookmarks(bufnr)
 	else
 		local f = assert(io.open(path, "rb"))
 
-		local content = f:read("*all")
+		local content = f:read("a")
 
 		f:close()
 
@@ -124,12 +124,11 @@ function M.sync_buffer_bookmarks(bufnr)
 	local file = io.open(path, "w")
 
 	if file then
-		if M.local_bookmarks[bufnr] == nil or #M.local_bookmarks[bufnr] == 0 then
-			file:write("[]")
-		else
+		if M.local_bookmarks[bufnr] ~= nil and #M.local_bookmarks[bufnr] ~= 0 then
 			file:write(json.encode(M.local_bookmarks[bufnr]))
 		end
 		file:flush()
+        file:close()
 
 		M.last_sync_bookmarks[bufnr] = M.local_bookmarks[bufnr]
 		notify()
