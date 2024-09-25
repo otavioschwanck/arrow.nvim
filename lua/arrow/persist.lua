@@ -135,7 +135,11 @@ function M.go_to(index)
 		return
 	end
 
-	if config.getState("global_bookmarks") == true or config.getState("save_key_name") == "cwd" then
+	if
+		config.getState("global_bookmarks") == true
+		or config.getState("save_key_name") == "cwd"
+		or config.getState("save_key_name") == "git_root_bare"
+	then
 		vim.cmd(":edit " .. filename)
 	else
 		vim.cmd(":edit " .. config.getState("save_key_cached") .. "/" .. filename)

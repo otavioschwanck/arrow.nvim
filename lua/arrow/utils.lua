@@ -122,8 +122,12 @@ function M.get_buffer_path(bufnr)
 	local escaped_save_key = save_key:gsub("[%(%)%.%%%+%-%*%?%[%]%^%$]", "%%%1")
 
 	if absolute_buffer_path:find("^" .. escaped_save_key .. "/") then
-		local relative_path = absolute_buffer_path:gsub("^" .. escaped_save_key .. "/", "")
-		return relative_path
+		if config.getState("save_key_name") == "git_root_bare" then
+			return vim.fn.fnamemodify(vim.fn.expand("%"), ":~:.")
+		else
+			local relative_path = absolute_buffer_path:gsub("^" .. escaped_save_key .. "/", "")
+			return relative_path
+		end
 	else
 		return absolute_buffer_path
 	end
