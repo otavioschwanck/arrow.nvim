@@ -4,6 +4,7 @@ local config = require("arrow.config")
 local persist = require("arrow.persist")
 local utils = require("arrow.utils")
 local git = require("arrow.git")
+local icons = require("arrow.integration.icons")
 
 local fileNames = {}
 local to_highlight = {}
@@ -141,21 +142,10 @@ local function closeMenu()
 	vim.api.nvim_win_close(win, true)
 end
 
-local function get_file_icon(file_name)
-	if vim.fn.isdirectory(file_name) == 1 then
-		return "", "Normal"
-	end
-
-	local webdevicons = require("nvim-web-devicons")
-	local extension = vim.fn.fnamemodify(file_name, ":e")
-	local icon, hl_group = webdevicons.get_icon(file_name, extension, { default = true })
-	return icon, hl_group
-end
-
 local function renderBuffer(buffer)
 	vim.api.nvim_buf_set_option(buffer, "modifiable", true)
 
-	local icons = config.getState("show_icons")
+	local show_icons = config.getState("show_icons")
 	local buf = buffer or vim.api.nvim_get_current_buf()
 	local lines = { "" }
 
@@ -185,8 +175,8 @@ local function renderBuffer(buffer)
 			M.openFile(i)
 		end, { noremap = true, silent = true, buffer = buf, nowait = true })
 
-		if icons then
-			local icon, hl_group = get_file_icon(fileNames[i])
+		if show_icons then
+			local icon, hl_group = icons.get_file_icon(fileNames[i])
 
 			to_highlight[i] = hl_group
 
