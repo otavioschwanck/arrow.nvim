@@ -18,6 +18,11 @@ Arrow also provides per buffer bookmarks that will can quickly jump to them. (An
 ```lua
 return {
   "otavioschwanck/arrow.nvim",
+  dependencies = {
+    { "nvim-tree/nvim-web-devicons" },
+    -- or if using `mini.icons`
+    -- { "echasnovski/mini.icons" },
+  },
   opts = {
     show_icons = true,
     leader_key = ';', -- Recommended to be a single key
