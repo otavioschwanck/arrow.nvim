@@ -64,8 +64,10 @@ function M.spawn_preview_window(buffer, index, bookmark, bookmark_count)
 	local row = height + (index - 1) * (lines_count + 2) - (bookmark_count - 1) * lines_count
 
 	local width = math.ceil(vim.o.columns / 2)
-	
+
 	local zindex = config.getState("buffer_mark_zindex")
+
+	local border = config.getState("window").border
 
 	lastRow = row
 	spawn_col = width
@@ -76,7 +78,7 @@ function M.spawn_preview_window(buffer, index, bookmark, bookmark_count)
 		row = row,
 		col = math.ceil((vim.o.columns - width) / 2),
 		relative = "editor",
-		border = "single",
+		border = border,
 		zindex = zindex or 50,
 	}
 
@@ -305,6 +307,8 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_wi
 
 	local width = math.ceil(vim.o.columns / 2)
 
+	local border = config.getState("window").border
+
 	local window_config
 
 	if #bookmarks == 0 then
@@ -315,7 +319,7 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_wi
 			col = math.ceil((vim.o.columns - 15) / 2),
 			style = "minimal",
 			relative = "editor",
-			border = "single",
+			border = border,
 		}
 	else
 		window_config = {
@@ -325,7 +329,7 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_wi
 			col = width - spawn_col / 2,
 			style = "minimal",
 			relative = "editor",
-			border = "single",
+			border = border,
 		}
 	end
 
