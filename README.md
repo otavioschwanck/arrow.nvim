@@ -66,6 +66,7 @@ Just press the leader_key set on setup and follow you heart. (Is that easy)
   always_show_path = false,
   separate_by_branch = false, -- Bookmarks will be separated by git branch
   hide_handbook = false, -- set to true to hide the shortcuts on menu.
+  hide_buffer_handbook = false, --set to true to hide shortcuts on buffer menu
   save_path = function()
     return vim.fn.stdpath("cache") .. "/arrow"
   end,
