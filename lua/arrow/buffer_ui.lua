@@ -178,9 +178,7 @@ end
 local function delete_marks_from_delete_mode(call_buffer)
 	local reversely_sorted_to_delete = vim.fn.reverse(vim.fn.sort(to_delete))
 
-	for _, index in ipairs(reversely_sorted_to_delete) do
-		persist.remove(index, call_buffer)
-	end
+	persist.remove(reversely_sorted_to_delete, call_buffer)
 end
 
 local function after_close(call_buffer)

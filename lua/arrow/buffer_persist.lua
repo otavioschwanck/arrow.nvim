@@ -128,7 +128,7 @@ function M.sync_buffer_bookmarks(bufnr)
 			file:write(json.encode(M.local_bookmarks[bufnr]))
 		end
 		file:flush()
-        file:close()
+		file:close()
 
 		M.last_sync_bookmarks[bufnr] = M.local_bookmarks[bufnr]
 		notify()
@@ -159,10 +159,25 @@ function M.remove(index, bufnr)
 		return
 	end
 
-	if M.local_bookmarks[bufnr][index] == nil then
+	local to_remove = {}
+
+	if type(index) == "table" then
+		for _, i in ipairs(index) do
+			if M.local_bookmarks[bufnr][i] ~= nil then
+				table.insert(to_remove, i)
+			end
+		end
+	else
+		to_remove = { index }
+	end
+
+	if #to_remove == 0 then
 		return
 	end
-	table.remove(M.local_bookmarks[bufnr], index)
+
+	for _, i in ipairs(to_remove) do
+		table.remove(M.local_bookmarks[bufnr], i)
+	end
 
 	M.sync_buffer_bookmarks(bufnr)
 end
