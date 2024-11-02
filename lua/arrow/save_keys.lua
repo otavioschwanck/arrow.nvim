@@ -1,7 +1,7 @@
 local M = {}
 
 function M.cwd()
-	return vim.loop.cwd()
+	return vim.uv.cwd()
 end
 
 function M.git_root()

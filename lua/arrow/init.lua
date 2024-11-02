@@ -16,6 +16,8 @@ function M.setup(opts)
 	vim.cmd("highlight default link ArrowCurrentFile SpecialChar")
 	vim.cmd("highlight default link ArrowAction Character")
 	vim.cmd("highlight default link ArrowDeleteMode DiagnosticError")
+	-- Add new highlight group for global bookmarks
+	vim.cmd("highlight default link ArrowGlobalBookmark " .. (opts.global_bookmark_highlight or "Special"))
 
 	opts = opts or {}
 
@@ -46,6 +48,9 @@ function M.setup(opts)
 		style = "minimal",
 		border = "single",
 	}
+
+	-- Add new settings
+	config.setState("global_bookmark", opts.global_bookmark)
 
 	config.setState("window", utils.join_two_keys_tables(default_window_config, opts.window or {}))
 
@@ -90,7 +95,12 @@ function M.setup(opts)
 	config.setState("save_key_cached", config.getState("save_key")())
 
 	if leader_key then
-		vim.keymap.set("n", leader_key, ui.openMenu, { noremap = true, silent = true, nowait = true, desc = "Arrow File Mappings" })
+		vim.keymap.set(
+			"n",
+			leader_key,
+			ui.openMenu,
+			{ noremap = true, silent = true, nowait = true, desc = "Arrow File Mappings" }
+		)
 	end
 
 	if buffer_leader_key then
@@ -183,6 +193,9 @@ function M.setup(opts)
 	config.setState("full_path_list", utils.join_two_arrays(default_full_path_list, opts.full_path_list or {}))
 
 	persist.load_cache_file()
+
+	-- Load global bookmarks
+	require("arrow.global_bookmarks").load_cache_file()
 
 	vim.api.nvim_create_augroup("arrow", { clear = true })
 
