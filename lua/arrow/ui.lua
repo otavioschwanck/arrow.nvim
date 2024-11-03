@@ -412,10 +412,12 @@ function M.openFile(fileNumber, isGlobal)
 			require("arrow.global_bookmarks").remove(fileNumber)
 			renderBuffer(vim.api.nvim_get_current_buf())
 		else
+			print(fileName)
 			if fileName then
 				closeMenu()
-				-- Ensure we use the absolute path when opening
-				vim.cmd(":edit " .. vim.fn.fnameescape(vim.fn.fnamemodify(fileName, ":p")))
+				-- Always use the absolute path stored in global_bookmarks
+				-- which is already absolute since we fixed the save process
+				vim.cmd(":edit " .. vim.fn.fnameescape(fileName))
 			end
 		end
 	else
@@ -512,7 +514,7 @@ function M.getWindowConfig()
 	if show_handbook then
 		-- When no bookmarks exist, we show fewer actions
 		if #vim.g.arrow_filenames == 0 and #global_bookmarks == 0 then
-			height = height + 3 -- Save/Toggle + Add Global + Quit
+			height = height + 3       -- Save/Toggle + Add Global + Quit
 		else
 			height = height + #actionsMenu + 1 -- +1 for spacing before actions
 		end
@@ -577,10 +579,10 @@ function M.openMenu(bufnr)
 	local mappings = config.getState("mappings")
 	local separate_save_and_remove = config.getState("separate_save_and_remove")
 	local menuKeymapOpts = {
-		noremap = true, -- Don't use existing mappings
-		silent = true, -- Don't show messages
-		buffer = menuBuf, -- Local to menu buffer
-		nowait = true, -- Don't wait for other potential mappings
+		noremap = true,       -- Don't use existing mappings
+		silent = true,        -- Don't show messages
+		buffer = menuBuf,     -- Local to menu buffer
+		nowait = true,        -- Don't wait for other potential mappings
 		desc = "Arrow menu action", -- Description for the mapping
 	}
 

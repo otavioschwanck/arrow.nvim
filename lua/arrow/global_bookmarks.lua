@@ -24,8 +24,11 @@ function M.remove(index)
 end
 
 function M.is_saved(filename)
+	-- Convert to absolute path for comparison
+	local abs_path = vim.fn.fnamemodify(filename, ":p")
+
 	for i, name in ipairs(M.global_bookmarks) do
-		if name == filename then
+		if name == abs_path then
 			return i
 		end
 	end
@@ -33,7 +36,7 @@ function M.is_saved(filename)
 end
 
 function M.save(filename)
-	-- Convert to absolute path if it isn't already
+	-- Force absolute path conversion
 	local abs_path = vim.fn.fnamemodify(filename, ":p")
 
 	if not M.is_saved(abs_path) then
