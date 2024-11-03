@@ -248,4 +248,26 @@ function M.open_cache_file()
 	return bufnr, winid
 end
 
+function M.refresh_cache()
+	-- Refresh git branch and save key
+	git.refresh_git_branch()
+	config.setState("save_key_cached", config.getState("save_key")())
+
+	-- Reload global bookmarks
+	require("arrow.global_bookmarks").load_cache_file()
+
+	-- Reload local bookmarks
+	M.load_cache_file()
+
+	-- Refresh current buffer's bookmarks if applicable
+	local bufnr = vim.api.nvim_get_current_buf()
+	local buffer_persist = require("arrow.buffer_persist")
+	if vim.api.nvim_buf_is_valid(bufnr) then
+		buffer_persist.load_buffer_bookmarks(bufnr)
+	end
+
+	-- Notify any listeners
+	notify()
+end
+
 return M
