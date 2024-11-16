@@ -28,13 +28,16 @@ function M.setup(opts)
 
 	local default_mappings = {
 		edit = "e",
+		edit_global = "E",
 		delete_mode = "d",
 		clear_all_items = "C",
 		toggle = "s",
+		toggle_global = "S",
 		open_vertical = "v",
 		open_horizontal = "-",
 		quit = "q",
 		remove = "x",
+		remove_global = "X",
 		next_item = "]",
 		prev_item = "[",
 	}

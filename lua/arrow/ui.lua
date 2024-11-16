@@ -49,28 +49,54 @@ local function getActionsMenu()
 	local global_bookmarks = require("arrow.global_bookmarks").global_bookmarks
 	local separate_save_and_remove = config.getState("separate_save_and_remove")
 	local already_saved = current_index > 0
+	local is_in_global = false
+	local filename = vim.fn.expand("%:p")
+
+	-- Check if current file is in global bookmarks
+	for _, bookmark in ipairs(global_bookmarks) do
+		if bookmark == filename then
+			is_in_global = true
+			break
+		end
+	end
 
 	local local_bookmarks_count = #vim.g.arrow_filenames
 	local global_bookmarks_count = #global_bookmarks
 
 	-- Initialize basic actions that should always be shown
 	local return_mappings = {
-		string.format("%s Add to Global Bookmarks", mappings.global_bookmark),
 		string.format("%s Quit", mappings.quit),
 	}
+
+	-- Handle global bookmark action based on separate_save_and_remove setting
+	if separate_save_and_remove then
+		if is_in_global then
+			table.insert(return_mappings, string.format("%s Remove from Global", mappings.remove_global))
+		else
+			-- Only show Add to Global if not already in global bookmarks
+			table.insert(return_mappings, string.format("%s Add to Global", mappings.toggle_global))
+		end
+	else
+		if is_in_global then
+			table.insert(return_mappings, string.format("%s Remove from Global", mappings.toggle_global))
+		else
+			table.insert(return_mappings, string.format("%s Add to Global", mappings.toggle_global))
+		end
+	end
 
 	-- If we have any bookmarks (global or local), or if someone is currently saving one
 	if local_bookmarks_count > 0 or global_bookmarks_count > 0 or vim.b.arrow_current_mode then
 		table.insert(return_mappings, string.format("%s Edit Arrow File", mappings.edit))
+		table.insert(return_mappings, string.format("%s Edit Global Bookmarks", mappings.edit_global))
 		table.insert(return_mappings, string.format("%s Delete mode", mappings.delete_mode))
-		table.insert(return_mappings, string.format("%s Clear All Items", mappings.clear_all_items))
+		table.insert(return_mappings, string.format("%s Clear All Local Items", mappings.clear_all_items))
 		table.insert(return_mappings, string.format("%s Open Vertical", mappings.open_vertical))
 		table.insert(return_mappings, string.format("%s Open Horizontal", mappings.open_horizontal))
 		table.insert(return_mappings, string.format("%s Next Item", mappings.next_item))
 		table.insert(return_mappings, string.format("%s Prev Item", mappings.prev_item))
 	end
 
-	-- Handle separate save/remove or toggle behavior
+	-- Handle local bookmark action based on separate_save_and_remove setting
 	if separate_save_and_remove then
 		if already_saved then
 			table.insert(return_mappings, string.format("%s Remove Current File", mappings.remove))
@@ -514,7 +540,7 @@ function M.getWindowConfig()
 	if show_handbook then
 		-- When no bookmarks exist, we show fewer actions
 		if #vim.g.arrow_filenames == 0 and #global_bookmarks == 0 then
-			height = height + 3       -- Save/Toggle + Add Global + Quit
+			height = height + 3 -- Save/Toggle + Add Global + Quit
 		else
 			height = height + #actionsMenu + 1 -- +1 for spacing before actions
 		end
@@ -561,13 +587,7 @@ function M.openMenu(bufnr)
 
 	to_highlight = {}
 	fileNames = vim.g.arrow_filenames
-	local filename
-
-	if config.getState("global_bookmarks") == true then
-		filename = vim.fn.expand("%:p")
-	else
-		filename = utils.get_current_buffer_path()
-	end
+	local filename = vim.fn.expand("%:p")
 
 	-- Set current_index based on whether the file is saved
 	current_index = persist.is_saved(filename) or 0
@@ -579,10 +599,10 @@ function M.openMenu(bufnr)
 	local mappings = config.getState("mappings")
 	local separate_save_and_remove = config.getState("separate_save_and_remove")
 	local menuKeymapOpts = {
-		noremap = true,       -- Don't use existing mappings
-		silent = true,        -- Don't show messages
-		buffer = menuBuf,     -- Local to menu buffer
-		nowait = true,        -- Don't wait for other potential mappings
+		noremap = true, -- Don't use existing mappings
+		silent = true, -- Don't show messages
+		buffer = menuBuf, -- Local to menu buffer
+		nowait = true, -- Don't wait for other potential mappings
 		desc = "Arrow menu action", -- Description for the mapping
 	}
 
@@ -612,15 +632,6 @@ function M.openMenu(bufnr)
 		end
 	end
 
-	-- Save global bookmark
-	vim.keymap.set("n", mappings.global_bookmark, function()
-		if vim.b.arrow_current_mode ~= "delete_mode" then
-			local gb = require("arrow.global_bookmarks")
-			gb.save(filename)
-			closeMenu()
-		end
-	end, menuKeymapOpts)
-
 	-- Local bookmark number keymaps
 	local indexes = config.getState("index_keys")
 	for i = 1, #fileNames do
@@ -648,23 +659,79 @@ function M.openMenu(bufnr)
 		persist.open_cache_file()
 	end, menuKeymapOpts)
 
+	vim.keymap.set("n", mappings.edit_global, function()
+		closeMenu()
+		require("arrow.global_bookmarks").open_cache_file()
+	end, menuKeymapOpts)
+
+	-- Global and local bookmark mappings
 	if separate_save_and_remove then
-		-- Only set save mapping if file is not already saved
-		if not persist.is_saved(filename) then
-			vim.keymap.set("n", mappings.toggle, function()
-				persist.save(filename)
+		local is_in_global = false
+
+		-- Check if current file is in global bookmarks using absolute paths
+		for _, bookmark in ipairs(global_bookmarks.global_bookmarks) do
+			if bookmark == filename then
+				is_in_global = true
+				break
+			end
+		end
+
+		-- Global bookmark keymaps
+		if is_in_global then
+			vim.keymap.set("n", mappings.remove_global, function()
+				local gb = require("arrow.global_bookmarks")
+				for i, bookmark in ipairs(gb.global_bookmarks) do
+					if vim.fn.fnamemodify(bookmark, ":p") == filename then
+						gb.remove(i)
+						break
+					end
+				end
 				closeMenu()
+			end, menuKeymapOpts)
+		else
+			vim.keymap.set("n", mappings.toggle_global, function()
+				if vim.b.arrow_current_mode ~= "delete_mode" then
+					local gb = require("arrow.global_bookmarks")
+					gb.save(filename)
+					closeMenu()
+				end
 			end, menuKeymapOpts)
 		end
 
-		-- Only set remove mapping if file is already saved
+		-- Local bookmark keymaps for separate save/remove
 		if persist.is_saved(filename) then
 			vim.keymap.set("n", mappings.remove, function()
 				persist.remove(filename)
 				closeMenu()
 			end, menuKeymapOpts)
+		else
+			vim.keymap.set("n", mappings.toggle, function()
+				persist.save(filename)
+				closeMenu()
+			end, menuKeymapOpts)
 		end
 	else
+		-- Global bookmark toggle mapping for combined mode
+		vim.keymap.set("n", mappings.toggle_global, function()
+			if vim.b.arrow_current_mode ~= "delete_mode" then
+				local gb = require("arrow.global_bookmarks")
+				local current_file = vim.fn.expand("%:p")
+				local found = false
+				for i, bookmark in ipairs(gb.global_bookmarks) do
+					if vim.fn.fnamemodify(bookmark, ":p") == current_file then
+						gb.remove(i)
+						found = true
+						break
+					end
+				end
+				if not found then
+					gb.save(current_file)
+				end
+				closeMenu()
+			end
+		end, menuKeymapOpts)
+
+		-- Local bookmark toggle mapping for combined mode
 		vim.keymap.set("n", mappings.toggle, function()
 			persist.toggle(filename)
 			closeMenu()

@@ -87,4 +87,69 @@ function M.load_cache_file()
 	end
 end
 
+function M.open_cache_file()
+	local save_path = require("arrow.config").getState("save_path")()
+	save_path = save_path:gsub("/$", "")
+
+	if vim.fn.isdirectory(save_path) == 0 then
+		vim.fn.mkdir(save_path, "p")
+	end
+
+	local cache_path = save_path .. "/global_bookmarks"
+	local content = {}
+
+	if vim.fn.filereadable(cache_path) == 1 then
+		content = vim.fn.readfile(cache_path)
+	end
+
+	local bufnr = vim.api.nvim_create_buf(false, true)
+
+	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, content)
+
+	local width = math.min(80, vim.fn.winwidth(0) - 4)
+	local height = math.min(20, #content + 2)
+
+	local row = math.ceil((vim.o.lines - height) / 2)
+	local col = math.ceil((vim.o.columns - width) / 2)
+
+	local opts = {
+		style = "minimal",
+		relative = "editor",
+		width = width,
+		height = height,
+		row = row,
+		col = col,
+		focusable = true,
+		border = "single",
+	}
+
+	local winid = vim.api.nvim_open_win(bufnr, true, opts)
+
+	-- Set up keymaps
+	local close_buffer = ":lua vim.api.nvim_win_close(" .. winid .. ", {force = true})<CR>"
+	vim.api.nvim_buf_set_keymap(bufnr, "n", "q", close_buffer, { noremap = true, silent = true })
+	vim.api.nvim_buf_set_keymap(bufnr, "n", "<Esc>", close_buffer, { noremap = true, silent = true })
+	vim.keymap.set(
+		"n",
+		require("arrow.config").getState("leader_key"),
+		close_buffer,
+		{ noremap = true, silent = true, buffer = bufnr }
+	)
+
+	-- Save on buffer leave
+	vim.api.nvim_create_autocmd("BufLeave", {
+		buffer = bufnr,
+		desc = "save global bookmarks buffer on leave",
+		callback = function()
+			local updated_content = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+			vim.fn.writefile(updated_content, cache_path)
+			M.load_cache_file()
+		end,
+	})
+
+	vim.cmd("setlocal nu")
+
+	return bufnr, winid
+end
+
 return M
