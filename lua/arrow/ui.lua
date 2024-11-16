@@ -438,7 +438,6 @@ function M.openFile(fileNumber, isGlobal)
 			require("arrow.global_bookmarks").remove(fileNumber)
 			renderBuffer(vim.api.nvim_get_current_buf())
 		else
-			print(fileName)
 			if fileName then
 				closeMenu()
 				-- Always use the absolute path stored in global_bookmarks
@@ -588,6 +587,7 @@ function M.openMenu(bufnr)
 	to_highlight = {}
 	fileNames = vim.g.arrow_filenames
 	local filename = vim.fn.expand("%:p")
+	local relative_filename = utils.get_current_buffer_path()
 
 	-- Set current_index based on whether the file is saved
 	current_index = persist.is_saved(filename) or 0
@@ -699,14 +699,14 @@ function M.openMenu(bufnr)
 		end
 
 		-- Local bookmark keymaps for separate save/remove
-		if persist.is_saved(filename) then
+		if persist.is_saved(relative_filename) then
 			vim.keymap.set("n", mappings.remove, function()
-				persist.remove(filename)
+				persist.remove(relative_filename)
 				closeMenu()
 			end, menuKeymapOpts)
 		else
 			vim.keymap.set("n", mappings.toggle, function()
-				persist.save(filename)
+				persist.save(relative_filename)
 				closeMenu()
 			end, menuKeymapOpts)
 		end
@@ -732,7 +732,7 @@ function M.openMenu(bufnr)
 
 		-- Local bookmark toggle mapping for combined mode
 		vim.keymap.set("n", mappings.toggle, function()
-			persist.toggle(filename)
+			persist.toggle(relative_filename)
 			closeMenu()
 		end, menuKeymapOpts)
 	end
