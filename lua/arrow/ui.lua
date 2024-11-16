@@ -681,7 +681,7 @@ function M.openMenu(bufnr)
 			vim.keymap.set("n", mappings.remove_global, function()
 				local gb = require("arrow.global_bookmarks")
 				for i, bookmark in ipairs(gb.global_bookmarks) do
-					if vim.fn.fnamemodify(bookmark, ":p") == filename then
+					if bookmark == filename then
 						gb.remove(i)
 						break
 					end
@@ -715,17 +715,16 @@ function M.openMenu(bufnr)
 		vim.keymap.set("n", mappings.toggle_global, function()
 			if vim.b.arrow_current_mode ~= "delete_mode" then
 				local gb = require("arrow.global_bookmarks")
-				local current_file = vim.fn.expand("%:p")
 				local found = false
 				for i, bookmark in ipairs(gb.global_bookmarks) do
-					if vim.fn.fnamemodify(bookmark, ":p") == current_file then
+					if bookmark == filename then
 						gb.remove(i)
 						found = true
 						break
 					end
 				end
 				if not found then
-					gb.save(current_file)
+					gb.save(filename)
 				end
 				closeMenu()
 			end
