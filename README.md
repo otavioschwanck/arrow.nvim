@@ -96,7 +96,7 @@ Just press the leader_key set on setup and follow you heart. (Is that easy)
   per_buffer_config = {
     lines = 4, -- Number of lines showed on preview.
     sort_automatically = true, -- Auto sort buffer marks.
-    satellite = { -- defualt to nil, display arrow index in scrollbar at every update
+    satellite = { -- default to nil, display arrow index in scrollbar at every update
       enable = false,
       overlap = true,
       priority = 1000,
