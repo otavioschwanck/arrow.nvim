@@ -330,6 +330,7 @@ function M.openFile(fileNumber)
 		end
 
 		closeMenu()
+		vim.api.nvim_exec_autocmds("User", { pattern = "ArrowOpenFile" })
 
 		if
 			config.getState("global_bookmarks") == true
