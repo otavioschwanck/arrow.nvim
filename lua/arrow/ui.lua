@@ -1,13 +1,5 @@
 local M = {}
 
-local DEBUG_MODE = false
-
-local function log(...)
-	if DEBUG_MODE then
-		vim.print(...)
-	end
-end
-
 local config = require("arrow.config")
 local persist = require("arrow.persist")
 local utils = require("arrow.utils")
@@ -193,46 +185,46 @@ local function format_file_names(file_names)
 	local full_path_list = config.getState("full_path_list")
 	local formatted_names = {}
 
-	log("\n=== Debug Format File Names ===")
-	log("Number of files to format:", #file_names)
+	utils.log("\n=== Debug Format File Names ===")
+	utils.log("Number of files to format:", #file_names)
 
 	-- First pass: count occurrences
 	local name_occurrences = {}
 	for i, full_path in ipairs(file_names) do
 		local tail = vim.fn.fnamemodify(full_path, ":t:r")
 		print(string.format("\nFile %d:", i))
-		log("Full path:", full_path)
-		log("Tail:", tail)
+		utils.log("Full path:", full_path)
+		utils.log("Tail:", tail)
 
 		if vim.fn.isdirectory(full_path) == 1 then
-			log("Type: Directory")
+			utils.log("Type: Directory")
 			local parsed_path = full_path:gsub("/$", "")
 			local folder_name = vim.fn.fnamemodify(parsed_path, ":t")
 
 			name_occurrences[folder_name] = name_occurrences[folder_name] or {}
 			table.insert(name_occurrences[folder_name], full_path)
-			log("Folder name:", folder_name)
-			log("Occurrences:", #name_occurrences[folder_name])
+			utils.log("Folder name:", folder_name)
+			utils.log("Occurrences:", #name_occurrences[folder_name])
 		else
-			log("Type: File")
+			utils.log("Type: File")
 			name_occurrences[tail] = name_occurrences[tail] or {}
 			table.insert(name_occurrences[tail], full_path)
-			log("Occurrences:", #name_occurrences[tail])
+			utils.log("Occurrences:", #name_occurrences[tail])
 		end
 	end
 
 	-- Second pass: format names
 	for i, full_path in ipairs(file_names) do
 		print(string.format("\nFormatting file %d:", i))
-		log("Path:", full_path)
+		utils.log("Path:", full_path)
 
 		local tail = vim.fn.fnamemodify(full_path, ":t:r")
 		local tail_with_extension = vim.fn.fnamemodify(full_path, ":t")
-		log("Tail:", tail)
-		log("Tail with ext:", tail_with_extension)
+		utils.log("Tail:", tail)
+		utils.log("Tail with ext:", tail_with_extension)
 
 		if vim.fn.isdirectory(full_path) == 1 then
-			log("Processing directory...")
+			utils.log("Processing directory...")
 			if not full_path:match("/$") then
 				full_path = full_path .. "/"
 			end
@@ -242,25 +234,25 @@ local function format_file_names(file_names)
 			local location = vim.fn.fnamemodify(full_path, ":h:h")
 
 			local formatted = string.format("%s . %s", folder_name .. "/", location)
-			log("Formatted directory:", formatted)
+			utils.log("Formatted directory:", formatted)
 			table.insert(formatted_names, formatted)
 		else
-			log("Processing file...")
+			utils.log("Processing file...")
 			local show_path = config.getState("always_show_path")
 				or (name_occurrences[tail] and #name_occurrences[tail] > 1)
 				or vim.tbl_contains(full_path_list, tail)
 
-			log("Show path:", show_path)
-			log("In full_path_list:", vim.tbl_contains(full_path_list, tail))
-			log("Occurrences:", #name_occurrences[tail])
+			utils.log("Show path:", show_path)
+			utils.log("In full_path_list:", vim.tbl_contains(full_path_list, tail))
+			utils.log("Occurrences:", #name_occurrences[tail])
 
 			if show_path then
 				local path = vim.fn.fnamemodify(full_path, ":h")
 				local formatted = string.format("%s . %s", tail_with_extension, path)
-				log("Formatted with path:", formatted)
+				utils.log("Formatted with path:", formatted)
 				table.insert(formatted_names, formatted)
 			else
-				log("Formatted without path:", tail_with_extension)
+				utils.log("Formatted without path:", tail_with_extension)
 				table.insert(formatted_names, tail_with_extension)
 			end
 		end

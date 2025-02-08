@@ -2,6 +2,14 @@ local M = {}
 
 local config = require("arrow.config")
 
+local DEBUG_MODE = false
+
+function M.log(...)
+	if DEBUG_MODE then
+		vim.print(...)
+	end
+end
+
 function M.table_comp(o1, o2)
 	local callList = {}
 
