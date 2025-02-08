@@ -1,5 +1,13 @@
 local M = {}
 
+local DEBUG_MODE = false
+
+local function log(...)
+	if DEBUG_MODE then
+		vim.print(...)
+	end
+end
+
 local config = require("arrow.config")
 local persist = require("arrow.persist")
 local utils = require("arrow.utils")
@@ -116,7 +124,6 @@ end
 
 local function format_single_filename(full_path, show_icons, line_number, is_global)
 	local formatted_name = ""
-	local full_path_list = config.getState("full_path_list")
 
 	-- Handle directory paths
 	if vim.fn.isdirectory(full_path) == 1 then
@@ -146,7 +153,6 @@ local function format_single_filename(full_path, show_icons, line_number, is_glo
 		end
 	else
 		-- Handle regular files
-		local tail = vim.fn.fnamemodify(full_path, ":t:r")
 		local tail_with_extension = vim.fn.fnamemodify(full_path, ":t")
 
 		if is_global then
@@ -187,46 +193,46 @@ local function format_file_names(file_names)
 	local full_path_list = config.getState("full_path_list")
 	local formatted_names = {}
 
-	print("\n=== Debug Format File Names ===")
-	print("Number of files to format:", #file_names)
+	log("\n=== Debug Format File Names ===")
+	log("Number of files to format:", #file_names)
 
 	-- First pass: count occurrences
 	local name_occurrences = {}
 	for i, full_path in ipairs(file_names) do
 		local tail = vim.fn.fnamemodify(full_path, ":t:r")
 		print(string.format("\nFile %d:", i))
-		print("Full path:", full_path)
-		print("Tail:", tail)
+		log("Full path:", full_path)
+		log("Tail:", tail)
 
 		if vim.fn.isdirectory(full_path) == 1 then
-			print("Type: Directory")
+			log("Type: Directory")
 			local parsed_path = full_path:gsub("/$", "")
 			local folder_name = vim.fn.fnamemodify(parsed_path, ":t")
 
 			name_occurrences[folder_name] = name_occurrences[folder_name] or {}
 			table.insert(name_occurrences[folder_name], full_path)
-			print("Folder name:", folder_name)
-			print("Occurrences:", #name_occurrences[folder_name])
+			log("Folder name:", folder_name)
+			log("Occurrences:", #name_occurrences[folder_name])
 		else
-			print("Type: File")
+			log("Type: File")
 			name_occurrences[tail] = name_occurrences[tail] or {}
 			table.insert(name_occurrences[tail], full_path)
-			print("Occurrences:", #name_occurrences[tail])
+			log("Occurrences:", #name_occurrences[tail])
 		end
 	end
 
 	-- Second pass: format names
 	for i, full_path in ipairs(file_names) do
 		print(string.format("\nFormatting file %d:", i))
-		print("Path:", full_path)
+		log("Path:", full_path)
 
 		local tail = vim.fn.fnamemodify(full_path, ":t:r")
 		local tail_with_extension = vim.fn.fnamemodify(full_path, ":t")
-		print("Tail:", tail)
-		print("Tail with ext:", tail_with_extension)
+		log("Tail:", tail)
+		log("Tail with ext:", tail_with_extension)
 
 		if vim.fn.isdirectory(full_path) == 1 then
-			print("Processing directory...")
+			log("Processing directory...")
 			if not full_path:match("/$") then
 				full_path = full_path .. "/"
 			end
@@ -236,25 +242,25 @@ local function format_file_names(file_names)
 			local location = vim.fn.fnamemodify(full_path, ":h:h")
 
 			local formatted = string.format("%s . %s", folder_name .. "/", location)
-			print("Formatted directory:", formatted)
+			log("Formatted directory:", formatted)
 			table.insert(formatted_names, formatted)
 		else
-			print("Processing file...")
+			log("Processing file...")
 			local show_path = config.getState("always_show_path")
 				or (name_occurrences[tail] and #name_occurrences[tail] > 1)
 				or vim.tbl_contains(full_path_list, tail)
 
-			print("Show path:", show_path)
-			print("In full_path_list:", vim.tbl_contains(full_path_list, tail))
-			print("Occurrences:", #name_occurrences[tail])
+			log("Show path:", show_path)
+			log("In full_path_list:", vim.tbl_contains(full_path_list, tail))
+			log("Occurrences:", #name_occurrences[tail])
 
 			if show_path then
 				local path = vim.fn.fnamemodify(full_path, ":h")
 				local formatted = string.format("%s . %s", tail_with_extension, path)
-				print("Formatted with path:", formatted)
+				log("Formatted with path:", formatted)
 				table.insert(formatted_names, formatted)
 			else
-				print("Formatted without path:", tail_with_extension)
+				log("Formatted without path:", tail_with_extension)
 				table.insert(formatted_names, tail_with_extension)
 			end
 		end
