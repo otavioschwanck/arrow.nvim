@@ -3,6 +3,7 @@ local M = {}
 local preview_buffers = {}
 
 local persist = require("arrow.buffer_persist")
+local utils = require("arrow.utils")
 local config = require("arrow.config")
 
 local lastRow = 0
@@ -64,7 +65,6 @@ function M.spawn_preview_window(buffer, index, bookmark, bookmark_count)
 	local row = height + (index - 1) * (lines_count + 2) - (bookmark_count - 1) * lines_count
 
 	local width = math.ceil(vim.o.columns / 2)
-	
 	local zindex = config.getState("buffer_mark_zindex")
 
 	lastRow = row
@@ -330,6 +330,11 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_wi
 	end
 
 	vim.api.nvim_open_win(actions_buffer, true, window_config)
+
+	local win = vim.api.nvim_open_win(actions_buffer, true, window_config)
+
+	-- Add this line:
+	utils.setup_auto_close(actions_buffer, win)
 
 	local mappings = config.getState("mappings")
 

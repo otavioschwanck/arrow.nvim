@@ -1,5 +1,7 @@
 local M = {}
 
+local utils = require("arrow.utils")
+
 M.global_bookmarks = {}
 
 function M.remove(index)
@@ -124,6 +126,8 @@ function M.open_cache_file()
 	}
 
 	local winid = vim.api.nvim_open_win(bufnr, true, opts)
+
+	utils.setup_auto_close(bufnr, winid)
 
 	-- Set up keymaps
 	local close_buffer = ":lua vim.api.nvim_win_close(" .. winid .. ", {force = true})<CR>"

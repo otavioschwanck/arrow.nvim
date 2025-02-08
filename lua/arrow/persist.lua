@@ -221,6 +221,8 @@ function M.open_cache_file()
 
 	local winid = vim.api.nvim_open_win(bufnr, true, opts)
 
+	utils.setup_auto_close(bufnr, winid)
+
 	local close_buffer = ":lua vim.api.nvim_win_close(" .. winid .. ", {force = true})<CR>"
 	vim.api.nvim_buf_set_keymap(bufnr, "n", "q", close_buffer, { noremap = true, silent = true })
 	vim.api.nvim_buf_set_keymap(bufnr, "n", "<Esc>", close_buffer, { noremap = true, silent = true })
