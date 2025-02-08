@@ -148,13 +148,29 @@ local function format_single_filename(full_path, show_icons, line_number, is_glo
 		-- Handle regular files
 		local tail = vim.fn.fnamemodify(full_path, ":t:r")
 		local tail_with_extension = vim.fn.fnamemodify(full_path, ":t")
-		local path = vim.fn.fnamemodify(full_path, ":h")
 
-		-- Always show path for regular files when not in special cases
-		if not is_global and path ~= "." then
-			formatted_name = string.format("%s . %s", tail_with_extension, path)
+		if is_global then
+			-- For global bookmarks, show the full absolute path
+			local abs_path = vim.fn.fnamemodify(full_path, ":p")
+			-- Replace home directory with ~
+			local home = vim.uv.os_homedir()
+			if home:sub(-1) ~= "/" then
+				home = home .. "/"
+			end
+
+			if vim.startswith(abs_path, home) then
+				abs_path = "~/" .. abs_path:sub(#home + 1)
+			end
+
+			formatted_name = abs_path
 		else
-			formatted_name = tail_with_extension
+			-- For local bookmarks, show filename and relative path
+			local path = vim.fn.fnamemodify(full_path, ":h")
+			if path ~= "." then
+				formatted_name = string.format("%s . %s", tail_with_extension, path)
+			else
+				formatted_name = tail_with_extension
+			end
 		end
 	end
 
