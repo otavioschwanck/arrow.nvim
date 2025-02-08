@@ -116,68 +116,45 @@ end
 
 local function format_single_filename(full_path, show_icons, line_number, is_global)
 	local formatted_name = ""
+	local full_path_list = config.getState("full_path_list")
 
-	-- Special handling for global bookmarks
-	if is_global then
-		-- Ensure we have absolute path
-		local abs_path = vim.fn.fnamemodify(full_path, ":p")
-		local home = vim.uv.os_homedir()
-
-		-- Ensure home path has trailing slash for proper matching
-		if home:sub(-1) ~= "/" then
-			home = home .. "/"
+	-- Handle directory paths
+	if vim.fn.isdirectory(full_path) == 1 then
+		if not (string.sub(full_path, #full_path, #full_path) == "/") then
+			full_path = full_path .. "/"
 		end
 
-		-- Check if file is under home directory
-		if vim.startswith(abs_path, home) then
-			-- Replace home path with ~
-			formatted_name = "~/" .. abs_path:sub(#home + 1)
+		local path = vim.fn.fnamemodify(full_path, ":h")
+		local display_path = path
+		local splitted_path = vim.split(display_path, "/")
+
+		if #splitted_path > 1 then
+			local folder_name = splitted_path[#splitted_path]
+			local location = vim.fn.fnamemodify(full_path, ":h:h")
+
+			if config.getState("always_show_path") then
+				formatted_name = string.format("%s . %s", folder_name .. "/", location)
+			else
+				formatted_name = string.format("%s", folder_name .. "/")
+			end
 		else
-			-- Show full path for files outside home
-			formatted_name = abs_path
+			if config.getState("always_show_path") then
+				formatted_name = full_path .. " . /"
+			else
+				formatted_name = full_path
+			end
 		end
 	else
-		-- Original formatting for local bookmarks
-		local full_path_list = config.getState("full_path_list")
+		-- Handle regular files
 		local tail = vim.fn.fnamemodify(full_path, ":t:r")
 		local tail_with_extension = vim.fn.fnamemodify(full_path, ":t")
+		local path = vim.fn.fnamemodify(full_path, ":h")
 
-		if vim.fn.isdirectory(full_path) == 1 then
-			if not (string.sub(full_path, #full_path, #full_path) == "/") then
-				full_path = full_path .. "/"
-			end
-
-			local path = vim.fn.fnamemodify(full_path, ":h")
-			local display_path = path
-			local splitted_path = vim.split(display_path, "/")
-
-			if #splitted_path > 1 then
-				local folder_name = splitted_path[#splitted_path]
-				local location = vim.fn.fnamemodify(full_path, ":h:h")
-
-				if config.getState("always_show_path") then
-					formatted_name = string.format("%s . %s", folder_name .. "/", location)
-				else
-					formatted_name = string.format("%s", folder_name .. "/")
-				end
-			else
-				if config.getState("always_show_path") then
-					formatted_name = full_path .. " . /"
-				else
-					formatted_name = full_path
-				end
-			end
-		elseif not (config.getState("always_show_path")) and not (vim.tbl_contains(full_path_list, tail)) then
-			formatted_name = tail_with_extension
+		-- Always show path for regular files when not in special cases
+		if not is_global and path ~= "." then
+			formatted_name = string.format("%s . %s", tail_with_extension, path)
 		else
-			local path = vim.fn.fnamemodify(full_path, ":h")
-			local display_path = path
-
-			if vim.tbl_contains(full_path_list, tail) then
-				display_path = vim.fn.fnamemodify(full_path, ":h")
-			end
-
-			formatted_name = string.format("%s . %s", tail_with_extension, display_path)
+			formatted_name = tail_with_extension
 		end
 	end
 
@@ -194,83 +171,76 @@ local function format_file_names(file_names)
 	local full_path_list = config.getState("full_path_list")
 	local formatted_names = {}
 
-	-- Table to store occurrences of file names (tail)
-	local name_occurrences = {}
+	print("\n=== Debug Format File Names ===")
+	print("Number of files to format:", #file_names)
 
-	for _, full_path in ipairs(file_names) do
-		local tail = vim.fn.fnamemodify(full_path, ":t:r") -- Get the file name without extension
+	-- First pass: count occurrences
+	local name_occurrences = {}
+	for i, full_path in ipairs(file_names) do
+		local tail = vim.fn.fnamemodify(full_path, ":t:r")
+		print(string.format("\nFile %d:", i))
+		print("Full path:", full_path)
+		print("Tail:", tail)
 
 		if vim.fn.isdirectory(full_path) == 1 then
-			local parsed_path = full_path
+			print("Type: Directory")
+			local parsed_path = full_path:gsub("/$", "")
+			local folder_name = vim.fn.fnamemodify(parsed_path, ":t")
 
-			if parsed_path:sub(#parsed_path, #parsed_path) == "/" then
-				parsed_path = parsed_path:sub(1, #parsed_path - 1)
-			end
-
-			local splitted_path = vim.split(parsed_path, "/")
-			local folder_name = splitted_path[#splitted_path]
-
-			if name_occurrences[folder_name] then
-				table.insert(name_occurrences[folder_name], full_path)
-			else
-				name_occurrences[folder_name] = { full_path }
-			end
+			name_occurrences[folder_name] = name_occurrences[folder_name] or {}
+			table.insert(name_occurrences[folder_name], full_path)
+			print("Folder name:", folder_name)
+			print("Occurrences:", #name_occurrences[folder_name])
 		else
-			if not name_occurrences[tail] then
-				name_occurrences[tail] = { full_path }
-			else
-				table.insert(name_occurrences[tail], full_path)
-			end
+			print("Type: File")
+			name_occurrences[tail] = name_occurrences[tail] or {}
+			table.insert(name_occurrences[tail], full_path)
+			print("Occurrences:", #name_occurrences[tail])
 		end
 	end
 
-	for _, full_path in ipairs(file_names) do
+	-- Second pass: format names
+	for i, full_path in ipairs(file_names) do
+		print(string.format("\nFormatting file %d:", i))
+		print("Path:", full_path)
+
 		local tail = vim.fn.fnamemodify(full_path, ":t:r")
 		local tail_with_extension = vim.fn.fnamemodify(full_path, ":t")
+		print("Tail:", tail)
+		print("Tail with ext:", tail_with_extension)
 
 		if vim.fn.isdirectory(full_path) == 1 then
-			if not (string.sub(full_path, #full_path, #full_path) == "/") then
+			print("Processing directory...")
+			if not full_path:match("/$") then
 				full_path = full_path .. "/"
 			end
 
 			local path = vim.fn.fnamemodify(full_path, ":h")
+			local folder_name = vim.fn.fnamemodify(path, ":t")
+			local location = vim.fn.fnamemodify(full_path, ":h:h")
 
-			local display_path = path
-
-			local splitted_path = vim.split(display_path, "/")
-
-			if #splitted_path > 1 then
-				local folder_name = splitted_path[#splitted_path]
-
-				local location = vim.fn.fnamemodify(full_path, ":h:h")
-
-				if #name_occurrences[folder_name] > 1 or config.getState("always_show_path") then
-					table.insert(formatted_names, string.format("%s . %s", folder_name .. "/", location))
-				else
-					table.insert(formatted_names, string.format("%s", folder_name .. "/"))
-				end
-			else
-				if config.getState("always_show_path") then
-					table.insert(formatted_names, full_path .. " . /")
-				else
-					table.insert(formatted_names, full_path)
-				end
-			end
-		elseif
-			not (config.getState("always_show_path"))
-			and #name_occurrences[tail] == 1
-			and not (vim.tbl_contains(full_path_list, tail))
-		then
-			table.insert(formatted_names, tail_with_extension)
+			local formatted = string.format("%s . %s", folder_name .. "/", location)
+			print("Formatted directory:", formatted)
+			table.insert(formatted_names, formatted)
 		else
-			local path = vim.fn.fnamemodify(full_path, ":h")
-			local display_path = path
+			print("Processing file...")
+			local show_path = config.getState("always_show_path")
+				or (name_occurrences[tail] and #name_occurrences[tail] > 1)
+				or vim.tbl_contains(full_path_list, tail)
 
-			if vim.tbl_contains(full_path_list, tail) then
-				display_path = vim.fn.fnamemodify(full_path, ":h")
+			print("Show path:", show_path)
+			print("In full_path_list:", vim.tbl_contains(full_path_list, tail))
+			print("Occurrences:", #name_occurrences[tail])
+
+			if show_path then
+				local path = vim.fn.fnamemodify(full_path, ":h")
+				local formatted = string.format("%s . %s", tail_with_extension, path)
+				print("Formatted with path:", formatted)
+				table.insert(formatted_names, formatted)
+			else
+				print("Formatted without path:", tail_with_extension)
+				table.insert(formatted_names, tail_with_extension)
 			end
-
-			table.insert(formatted_names, string.format("%s . %s", tail_with_extension, display_path))
 		end
 	end
 
@@ -291,28 +261,21 @@ local function render_highlights(buffer)
 	vim.api.nvim_buf_clear_namespace(buffer, -1, 0, -1)
 	local menuBuf = buffer or vim.api.nvim_get_current_buf()
 
+	-- Debug all highlights at start
+	print("\n=== All Icon Highlights ===")
+	for i, highlight in ipairs(to_highlight) do
+		print(string.format("Highlight %d: pos=%d, col=%d, hl=%s", i, highlight.pos, highlight.col, highlight.hl))
+	end
+
 	-- Highlight section headers
 	vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowHeader", 0, 3, -1)
 	local local_header_pos = 2 + math.max(1, #global_bookmarks)
 	vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowHeader", local_header_pos, 3, -1)
 
-	-- Debug icon highlights
-	print("Icon highlight data:", vim.inspect(to_highlight))
-
 	-- Handle file type icons
 	if config.getState("show_icons") then
 		for _, highlight in ipairs(to_highlight) do
 			if highlight.hl and type(highlight.hl) == "string" then
-				-- Print debug info for each icon highlight
-				print(
-					string.format(
-						"Applying icon highlight: pos=%d, col=%d, hl=%s",
-						highlight.pos,
-						highlight.col,
-						highlight.hl
-					)
-				)
-
 				if highlight.pos > 1 then
 					vim.api.nvim_buf_add_highlight(
 						menuBuf,
@@ -327,35 +290,63 @@ local function render_highlights(buffer)
 		end
 	end
 
-	-- Global bookmarks section
+	-- Global bookmarks section debug
+	print("\n=== Global Bookmarks ===")
 	for i = 1, #global_bookmarks do
 		local line_idx = i + 1
 		local line = vim.api.nvim_buf_get_lines(menuBuf, line_idx - 1, line_idx, false)[1]
+		if line then
+			print(string.format("Global bookmark %d at line %d: '%s'", i, line_idx, line))
+		end
+	end
+
+	-- Local bookmarks section with comprehensive debugging
+	print("\n=== Local Bookmarks ===")
+	for i = 1, #fileNames do
+		local actual_line = local_header_pos + i
+		local line = vim.api.nvim_buf_get_lines(menuBuf, actual_line, actual_line + 1, false)[1]
 
 		if line then
-			-- Debug line content
-			print(string.format("Line %d content: '%s'", line_idx, line))
+			-- Debug complete line info
+			print(string.format("\nLocal bookmark %d at line %d:", i, actual_line))
+			print("Full line content: '" .. line .. "'")
 
-			if vim.b.arrow_current_mode == "delete_mode" then
-				vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowDeleteMode", line_idx - 1, 3, 4)
-			else
-				vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowFileIndex", line_idx - 1, 3, 4)
+			-- Debug icon and highlight positions
+			local content_start = config.getState("show_icons") and 9 or 5
+			print(string.format("Content start: %d", content_start))
+
+			-- Find icon highlight for this line
+			for _, highlight in ipairs(to_highlight) do
+				if highlight.pos == actual_line + 1 then
+					print(
+						string.format(
+							"Icon highlight found: pos=%d, col=%d, hl=%s",
+							highlight.pos,
+							highlight.col,
+							highlight.hl
+						)
+					)
+				end
 			end
 
-			-- Use adjusted content_start
-			local content_start = config.getState("show_icons") and 9 or 5
-			local bookmark_text = line:sub(content_start + 1)
+			-- Handle index highlight
+			if vim.b.arrow_current_mode == "delete_mode" then
+				vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowDeleteMode", actual_line, 3, 4)
+			else
+				vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowFileIndex", actual_line, 3, 4)
+			end
 
-			-- Debug content position
-			print(string.format("Content start: %d, Text: '%s'", content_start, bookmark_text))
+			local bookmark_text = line:sub(content_start + 1)
+			print("Extracted bookmark text: '" .. bookmark_text .. "'")
 
 			local separator_pos = bookmark_text:find(" %.")
 			if separator_pos then
+				print(string.format("Separator found at position: %d", separator_pos))
 				vim.api.nvim_buf_add_highlight(
 					menuBuf,
 					-1,
 					"ArrowFileName",
-					line_idx - 1,
+					actual_line,
 					content_start,
 					content_start + separator_pos
 				)
@@ -363,57 +354,12 @@ local function render_highlights(buffer)
 					menuBuf,
 					-1,
 					"ArrowFilePath",
-					line_idx - 1,
-					content_start + separator_pos + 1,
-					-1
-				)
-			else
-				vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowFileName", line_idx - 1, content_start, -1)
-			end
-		end
-	end
-
-	-- Local bookmarks section
-	for i = 1, #fileNames do
-		local actual_line = local_header_pos + i
-		local line = vim.api.nvim_buf_get_lines(menuBuf, actual_line, actual_line + 1, false)[1]
-
-		if line then
-			-- Debug line content
-			print(string.format("Line %d content: '%s'", actual_line, line))
-			-- Handle the index character highlight
-			if vim.b.arrow_current_mode == "delete_mode" then
-				vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowDeleteMode", actual_line, 3, 4)
-			else
-				vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowFileIndex", actual_line, 3, 4)
-			end
-
-			-- Calculate content start (after index and potential icon)
-			local content_start = config.getState("show_icons") and 9 or 5
-			local bookmark_text = line:sub(content_start + 1)
-
-			-- Find the separator position if it exists
-			local separator_pos = bookmark_text:find(" %.")
-			if separator_pos then
-				-- Highlight filename and filepath separately
-				vim.api.nvim_buf_add_highlight(
-					menuBuf,
-					-1,
-					"ArrowFileName",
-					actual_line,
-					content_start,
-					content_start + separator_pos - 1
-				)
-				vim.api.nvim_buf_add_highlight(
-					menuBuf,
-					-1,
-					"ArrowFilePath",
 					actual_line,
 					content_start + separator_pos + 1,
 					-1
 				)
 			else
-				-- If no separator, highlight the whole path
+				print("No separator found, highlighting full line")
 				vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowFileName", actual_line, content_start, -1)
 			end
 		end
