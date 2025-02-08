@@ -192,7 +192,7 @@ local function format_file_names(file_names)
 	local name_occurrences = {}
 	for i, full_path in ipairs(file_names) do
 		local tail = vim.fn.fnamemodify(full_path, ":t:r")
-		print(string.format("\nFile %d:", i))
+		utils.log(string.format("\nFile %d:", i))
 		utils.log("Full path:", full_path)
 		utils.log("Tail:", tail)
 
@@ -215,7 +215,7 @@ local function format_file_names(file_names)
 
 	-- Second pass: format names
 	for i, full_path in ipairs(file_names) do
-		print(string.format("\nFormatting file %d:", i))
+		utils.log(string.format("\nFormatting file %d:", i))
 		utils.log("Path:", full_path)
 
 		local tail = vim.fn.fnamemodify(full_path, ":t:r")
@@ -340,7 +340,7 @@ local function render_highlights(buffer)
 		local line = vim.api.nvim_buf_get_lines(menuBuf, actual_line, actual_line + 1, false)[1]
 
 		if line then
-			print(string.format("\nProcessing line %d: '%s'", actual_line, line))
+			utils.log(string.format("\nProcessing line %d: '%s'", actual_line, line))
 
 			if vim.b.arrow_current_mode == "delete_mode" then
 				vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowDeleteMode", actual_line, 3, 4)
@@ -355,26 +355,26 @@ local function render_highlights(buffer)
 				local icon_str = line:sub(6):match("^([^ ]+)")
 				if icon_str then
 					content_start = 6 + vim.fn.strlen(icon_str)
-					print(string.format("Icon found: '%s', new content_start: %d", icon_str, content_start))
+					utils.log(string.format("Icon found: '%s', new content_start: %d", icon_str, content_start))
 				end
 			end
 
 			local bookmark_text = line:sub(content_start)
-			print(string.format("Extracted bookmark text: '%s'", bookmark_text))
+			utils.log(string.format("Extracted bookmark text: '%s'", bookmark_text))
 
 			-- Look for " . " specifically (space, dot, space)
 			local filename_part = bookmark_text:match("^%s*(.-)%s+%.%s+")
 			if filename_part then
 				local filename_length = vim.fn.strlen(filename_part)
-				print(string.format("Found filename part: '%s' (length: %d)", filename_part, filename_length))
+				utils.log(string.format("Found filename part: '%s' (length: %d)", filename_part, filename_length))
 
 				-- Calculate highlight positions
 				local filename_start = content_start
 				local filename_end = content_start + filename_length
 				local filepath_start = filename_end + 3 -- Skip " . "
 
-				print(string.format("Highlighting filename from %d to %d", filename_start, filename_end))
-				print(string.format("Highlighting filepath from %d to end", filepath_start))
+				utils.log(string.format("Highlighting filename from %d to %d", filename_start, filename_end))
+				utils.log(string.format("Highlighting filepath from %d to end", filepath_start))
 
 				vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowFileName", actual_line, filename_start, filename_end)
 				vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowFilePath", actual_line, filepath_start, -1)
@@ -383,7 +383,9 @@ local function render_highlights(buffer)
 				local filename = bookmark_text:match("^%s*(.-)%s*$") -- Trim spaces
 				if filename then
 					local filename_length = vim.fn.strlen(filename)
-					print(string.format("No separator - full filename: '%s' (length: %d)", filename, filename_length))
+					utils.log(
+						string.format("No separator - full filename: '%s' (length: %d)", filename, filename_length)
+					)
 
 					vim.api.nvim_buf_add_highlight(
 						menuBuf,
