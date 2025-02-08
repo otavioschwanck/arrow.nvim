@@ -16,8 +16,10 @@ function M.setup(opts)
 	vim.cmd("highlight default link ArrowCurrentFile SpecialChar")
 	vim.cmd("highlight default link ArrowAction Character")
 	vim.cmd("highlight default link ArrowDeleteMode DiagnosticError")
-	-- Add new highlight group for global bookmarks
 	vim.cmd("highlight default link ArrowGlobalBookmark " .. (opts.global_bookmark_highlight or "Special"))
+	vim.cmd("highlight default link ArrowFileName Normal")
+	vim.cmd("highlight default link ArrowFilePath Comment")
+	vim.cmd("highlight default link ArrowHeader Title") -- New highlight group for headers
 
 	opts = opts or {}
 

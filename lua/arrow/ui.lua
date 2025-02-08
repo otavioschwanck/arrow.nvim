@@ -291,62 +291,128 @@ local function render_highlights(buffer)
 	vim.api.nvim_buf_clear_namespace(buffer, -1, 0, -1)
 	local menuBuf = buffer or vim.api.nvim_get_current_buf()
 
-	-- Handle file type icons
+	-- Highlight section headers
+	vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowHeader", 0, 3, -1) -- Global Bookmarks header
+	local local_header_pos = 2 + math.max(1, #global_bookmarks)
+	vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowHeader", local_header_pos, 3, -1) -- Local Bookmarks header
+
+	-- Handle file type icons and global bookmarks
 	if config.getState("show_icons") then
 		for _, highlight in ipairs(to_highlight) do
 			if highlight.hl and type(highlight.hl) == "string" then
-				vim.api.nvim_buf_add_highlight(
-					menuBuf,
-					-1,
-					highlight.hl,
-					highlight.pos - 1,
-					highlight.col,
-					highlight.col + 2
-				)
+				-- Skip the header row (index 0)
+				if highlight.pos > 1 then
+					vim.api.nvim_buf_add_highlight(
+						menuBuf,
+						-1,
+						highlight.hl,
+						highlight.pos - 1,
+						highlight.col,
+						highlight.col + 2
+					)
+				end
 			end
 		end
 	end
 
-	-- Global bookmarks section
+	-- Global bookmarks section (starting from line 2, after the header)
 	for i = 1, #global_bookmarks do
-		if vim.b.arrow_current_mode == "delete_mode" then
-			vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowDeleteMode", i, 3, 4)
-		else
-			vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowFileIndex", i, 3, 4)
+		local line_idx = i + 1 -- Add 1 to skip the header
+		local line = vim.api.nvim_buf_get_lines(menuBuf, line_idx - 1, line_idx, false)[1]
+
+		if line then
+			-- Handle the index character highlight
+			if vim.b.arrow_current_mode == "delete_mode" then
+				vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowDeleteMode", line_idx - 1, 3, 4)
+			else
+				vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowFileIndex", line_idx - 1, 3, 4)
+			end
+
+			-- Calculate content start (after index and potential icon)
+			local content_start = config.getState("show_icons") and 7 or 5
+			local bookmark_text = line:sub(content_start + 1)
+
+			-- Find the separator position if it exists
+			local separator_pos = bookmark_text:find(" %.")
+			if separator_pos then
+				-- Highlight filename and filepath separately
+				vim.api.nvim_buf_add_highlight(
+					menuBuf,
+					-1,
+					"ArrowFileName",
+					line_idx - 1,
+					content_start,
+					content_start + separator_pos
+				)
+				vim.api.nvim_buf_add_highlight(
+					menuBuf,
+					-1,
+					"ArrowFilePath",
+					line_idx - 1,
+					content_start + separator_pos + 1,
+					-1
+				)
+			else
+				-- If no separator, highlight the whole path
+				vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowFileName", line_idx - 1, content_start, -1)
+			end
 		end
 	end
-
-	-- Calculate starting positions for headers
-	-- Account for: Global header (1) + global bookmarks (or "no bookmarks" message)
-	local global_section_height = math.max(1, #global_bookmarks) -- At least 1 for "No global bookmarks"
-	local local_header_pos = 2 + global_section_height
-
-	-- Highlight section headers - always highlight both headers
-	vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowGlobalBookmark", 0, 3, -1)
-	vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowCurrentFile", local_header_pos, 3, -1)
 
 	-- Local bookmarks section
 	for i = 1, #fileNames do
-		if vim.b.arrow_current_mode == "delete_mode" then
-			vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowDeleteMode", local_header_pos + i, 3, 4)
-		else
-			vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowFileIndex", local_header_pos + i, 3, 4)
+		local actual_line = local_header_pos + i
+		local line = vim.api.nvim_buf_get_lines(menuBuf, actual_line, actual_line + 1, false)[1]
+
+		if line then
+			-- Handle the index character highlight
+			if vim.b.arrow_current_mode == "delete_mode" then
+				vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowDeleteMode", actual_line, 3, 4)
+			else
+				vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowFileIndex", actual_line, 3, 4)
+			end
+
+			-- Calculate content start (after index and potential icon)
+			local content_start = config.getState("show_icons") and 7 or 5
+			local bookmark_text = line:sub(content_start + 1)
+
+			-- Find the separator position if it exists
+			local separator_pos = bookmark_text:find(" %.")
+			if separator_pos then
+				-- Highlight filename and filepath separately
+				vim.api.nvim_buf_add_highlight(
+					menuBuf,
+					-1,
+					"ArrowFileName",
+					actual_line,
+					content_start,
+					content_start + separator_pos
+				)
+				vim.api.nvim_buf_add_highlight(
+					menuBuf,
+					-1,
+					"ArrowFilePath",
+					actual_line,
+					content_start + separator_pos + 1,
+					-1
+				)
+			else
+				-- If no separator, highlight the whole path
+				vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowFileName", actual_line, content_start, -1)
+			end
 		end
 	end
 
-	-- Calculate action menu start position
-	-- Account for: Local header (1) + local bookmarks (or "no bookmarks" message) + blank line (1)
-	local local_section_height = math.max(1, #fileNames) -- At least 1 for "No local bookmarks"
+	-- Calculate action menu start position and highlight actions
+	local local_section_height = math.max(1, #fileNames)
 	local action_start = local_header_pos + local_section_height + 2
 
 	-- Highlight action shortcuts
 	for i = 0, #actionsMenu - 1 do
 		local line = vim.api.nvim_buf_get_lines(menuBuf, action_start + i, action_start + i + 1, false)[1]
 		if line then
-			-- Always highlight the first character after the initial spaces
 			vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowAction", action_start + i, 3, 4)
 
-			-- Highlight full delete mode line when active
 			if vim.b.arrow_current_mode == "delete_mode" and line:match(mappings.delete_mode .. " Delete mode") then
 				vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowDeleteMode", action_start + i, 0, -1)
 			end
