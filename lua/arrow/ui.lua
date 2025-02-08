@@ -329,7 +329,7 @@ local function render_highlights(buffer)
 			end
 
 			-- Calculate content start (after index and potential icon)
-			local content_start = config.getState("show_icons") and 7 or 5
+			local content_start = config.getState("show_icons") and 9 or 5
 			local bookmark_text = line:sub(content_start + 1)
 
 			-- Find the separator position if it exists
@@ -373,7 +373,7 @@ local function render_highlights(buffer)
 			end
 
 			-- Calculate content start (after index and potential icon)
-			local content_start = config.getState("show_icons") and 7 or 5
+			local content_start = config.getState("show_icons") and 9 or 5
 			local bookmark_text = line:sub(content_start + 1)
 
 			-- Find the separator position if it exists
@@ -386,7 +386,7 @@ local function render_highlights(buffer)
 					"ArrowFileName",
 					actual_line,
 					content_start,
-					content_start + separator_pos
+					content_start + separator_pos - 1
 				)
 				vim.api.nvim_buf_add_highlight(
 					menuBuf,
