@@ -286,36 +286,41 @@ local function render_highlights(buffer)
 	if config.getState("show_icons") then
 		for _, highlight in ipairs(to_highlight) do
 			if highlight.hl and type(highlight.hl) == "string" and highlight.pos > 1 then
-				vim.api.nvim_buf_add_highlight(
-					menuBuf,
-					-1,
-					highlight.hl,
-					highlight.pos - 1,
-					highlight.col,
-					highlight.col + 2
-				)
+				local line = vim.api.nvim_buf_get_lines(menuBuf, highlight.pos - 1, highlight.pos, false)[1]
+				if line then
+					-- Find the actual end of the icon
+					local icon_start = highlight.col
+					local icon_str = line:sub(icon_start + 1):match("^([^ ]+)")
+					local icon_end = icon_start + vim.fn.strlen(icon_str)
+
+					vim.api.nvim_buf_add_highlight(menuBuf, -1, highlight.hl, highlight.pos - 1, icon_start, icon_end)
+				end
 			end
 		end
 	end
 
-	-- Global bookmarks section (starting from line 2, after the header)
+	-- Global bookmarks section
 	for i = 1, #global_bookmarks do
-		local line_idx = i + 1 -- Add 1 to skip the header
+		local line_idx = i + 1
 		local line = vim.api.nvim_buf_get_lines(menuBuf, line_idx - 1, line_idx, false)[1]
 
 		if line then
-			-- Handle the index character highlight including delete mode
 			if vim.b.arrow_current_mode == "delete_mode" then
 				vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowDeleteMode", line_idx - 1, 3, 4)
 			else
 				vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowFileIndex", line_idx - 1, 3, 4)
 			end
 
-			-- Calculate proper content start position
-			local content_start = config.getState("show_icons") and 9 or 5
-			local bookmark_text = line:sub(content_start)
+			-- Find end of icon for precise content start
+			local basic_start = config.getState("show_icons") and 9 or 5
+			local content_start = basic_start
+			if config.getState("show_icons") then
+				local icon_str = line:sub(6):match("^([^ ]+)")
+				if icon_str then
+					content_start = 6 + vim.fn.strlen(icon_str)
+				end
+			end
 
-			-- Highlight the filename/path
 			vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowFileName", line_idx - 1, content_start, -1)
 		end
 	end
@@ -326,28 +331,34 @@ local function render_highlights(buffer)
 		local line = vim.api.nvim_buf_get_lines(menuBuf, actual_line, actual_line + 1, false)[1]
 
 		if line then
-			-- Handle the index character highlight including delete mode
 			if vim.b.arrow_current_mode == "delete_mode" then
 				vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowDeleteMode", actual_line, 3, 4)
 			else
 				vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowFileIndex", actual_line, 3, 4)
 			end
 
-			-- Calculate proper content start position
-			local content_start = config.getState("show_icons") and 9 or 5
-			local bookmark_text = line:sub(content_start)
+			-- Find end of icon for precise content start
+			local basic_start = config.getState("show_icons") and 9 or 5
+			local content_start = basic_start
+			if config.getState("show_icons") then
+				local icon_str = line:sub(6):match("^([^ ]+)")
+				if icon_str then
+					content_start = 6 + vim.fn.strlen(icon_str)
+				end
+			end
 
-			-- Find the separator position if it exists
+			local bookmark_text = line:sub(content_start)
 			local separator_pos = bookmark_text:find(" %.")
+
 			if separator_pos then
-				-- Ensure proper column calculation
+				-- Adjust highlight positions to account for icon variation
 				vim.api.nvim_buf_add_highlight(
 					menuBuf,
 					-1,
 					"ArrowFileName",
 					actual_line,
 					content_start,
-					content_start + separator_pos - 1
+					content_start + separator_pos - 2
 				)
 				vim.api.nvim_buf_add_highlight(
 					menuBuf,
@@ -363,16 +374,14 @@ local function render_highlights(buffer)
 		end
 	end
 
-	-- Calculate action menu start position
+	-- Actions section unchanged...
 	local local_section_height = math.max(1, #fileNames)
 	local action_start = local_header_pos + local_section_height + 2
 
-	-- Highlight action shortcuts
 	for i = 0, #actionsMenu - 1 do
 		local line = vim.api.nvim_buf_get_lines(menuBuf, action_start + i, action_start + i + 1, false)[1]
 		if line then
 			vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowAction", action_start + i, 3, 4)
-			-- Handle delete mode line highlighting
 			if vim.b.arrow_current_mode == "delete_mode" and line:match(mappings.delete_mode .. " Delete mode") then
 				vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowDeleteMode", action_start + i, 0, -1)
 			end
