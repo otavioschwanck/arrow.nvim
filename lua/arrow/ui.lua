@@ -277,7 +277,7 @@ local function render_highlights(buffer)
 	vim.api.nvim_buf_clear_namespace(buffer, -1, 0, -1)
 	local menuBuf = buffer or vim.api.nvim_get_current_buf()
 
-	-- Highlight section headers
+	-- Section headers
 	vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowHeader", 0, 3, -1)
 	local local_header_pos = 2 + math.max(1, #global_bookmarks)
 	vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowHeader", local_header_pos, 3, -1)
@@ -288,7 +288,6 @@ local function render_highlights(buffer)
 			if highlight.hl and type(highlight.hl) == "string" and highlight.pos > 1 then
 				local line = vim.api.nvim_buf_get_lines(menuBuf, highlight.pos - 1, highlight.pos, false)[1]
 				if line then
-					-- Find the actual end of the icon
 					local icon_start = highlight.col
 					local icon_str = line:sub(icon_start + 1):match("^([^ ]+)")
 					local icon_end = icon_start + vim.fn.strlen(icon_str)
@@ -305,15 +304,15 @@ local function render_highlights(buffer)
 		local line = vim.api.nvim_buf_get_lines(menuBuf, line_idx - 1, line_idx, false)[1]
 
 		if line then
+			-- Delete mode highlight for global bookmark letter
 			if vim.b.arrow_current_mode == "delete_mode" then
 				vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowDeleteMode", line_idx - 1, 3, 4)
 			else
 				vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowFileIndex", line_idx - 1, 3, 4)
 			end
 
-			-- Find end of icon for precise content start
-			local basic_start = config.getState("show_icons") and 9 or 5
-			local content_start = basic_start
+			-- Calculate content start based on icon
+			local content_start = config.getState("show_icons") and 9 or 5
 			if config.getState("show_icons") then
 				local icon_str = line:sub(6):match("^([^ ]+)")
 				if icon_str then
@@ -321,63 +320,91 @@ local function render_highlights(buffer)
 				end
 			end
 
+			-- For global bookmarks, try to find the home directory marker
+			local content = line:sub(content_start)
+			local home_pos = content:find("~/")
+			if home_pos then
+				content_start = content_start + home_pos - 2
+			end
+
+			-- Apply the filename highlight to the entire path for global bookmarks
 			vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowFileName", line_idx - 1, content_start, -1)
 		end
 	end
 
 	-- Local bookmarks section
+	local local_header_pos = 2 + math.max(1, #global_bookmarks)
+	vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowHeader", 0, 3, -1)
+	vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowHeader", local_header_pos, 3, -1)
+
 	for i = 1, #fileNames do
 		local actual_line = local_header_pos + i
 		local line = vim.api.nvim_buf_get_lines(menuBuf, actual_line, actual_line + 1, false)[1]
 
 		if line then
+			print(string.format("\nProcessing line %d: '%s'", actual_line, line))
+
 			if vim.b.arrow_current_mode == "delete_mode" then
 				vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowDeleteMode", actual_line, 3, 4)
 			else
 				vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowFileIndex", actual_line, 3, 4)
 			end
 
-			-- Find end of icon for precise content start
 			local basic_start = config.getState("show_icons") and 9 or 5
 			local content_start = basic_start
+
 			if config.getState("show_icons") then
 				local icon_str = line:sub(6):match("^([^ ]+)")
 				if icon_str then
 					content_start = 6 + vim.fn.strlen(icon_str)
+					print(string.format("Icon found: '%s', new content_start: %d", icon_str, content_start))
 				end
 			end
 
 			local bookmark_text = line:sub(content_start)
-			local separator_pos = bookmark_text:find(" %.")
+			print(string.format("Extracted bookmark text: '%s'", bookmark_text))
 
-			if separator_pos then
-				-- Adjust highlight positions to account for icon variation
-				vim.api.nvim_buf_add_highlight(
-					menuBuf,
-					-1,
-					"ArrowFileName",
-					actual_line,
-					content_start,
-					content_start + separator_pos - 2
-				)
-				vim.api.nvim_buf_add_highlight(
-					menuBuf,
-					-1,
-					"ArrowFilePath",
-					actual_line,
-					content_start + separator_pos + 1,
-					-1
-				)
+			-- Look for " . " specifically (space, dot, space)
+			local filename_part = bookmark_text:match("^%s*(.-)%s+%.%s+")
+			if filename_part then
+				local filename_length = vim.fn.strlen(filename_part)
+				print(string.format("Found filename part: '%s' (length: %d)", filename_part, filename_length))
+
+				-- Calculate highlight positions
+				local filename_start = content_start
+				local filename_end = content_start + filename_length
+				local filepath_start = filename_end + 3 -- Skip " . "
+
+				print(string.format("Highlighting filename from %d to %d", filename_start, filename_end))
+				print(string.format("Highlighting filepath from %d to end", filepath_start))
+
+				vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowFileName", actual_line, filename_start, filename_end)
+				vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowFilePath", actual_line, filepath_start, -1)
 			else
-				vim.api.nvim_buf_add_highlight(menuBuf, -1, "ArrowFileName", actual_line, content_start, -1)
+				-- No separator - highlight the whole filename
+				local filename = bookmark_text:match("^%s*(.-)%s*$") -- Trim spaces
+				if filename then
+					local filename_length = vim.fn.strlen(filename)
+					print(string.format("No separator - full filename: '%s' (length: %d)", filename, filename_length))
+
+					vim.api.nvim_buf_add_highlight(
+						menuBuf,
+						-1,
+						"ArrowFileName",
+						actual_line,
+						content_start,
+						content_start + filename_length
+					)
+				end
 			end
 		end
 	end
 
-	-- Actions section unchanged...
+	-- Calculate action menu start position
 	local local_section_height = math.max(1, #fileNames)
 	local action_start = local_header_pos + local_section_height + 2
 
+	-- Highlight action shortcuts
 	for i = 0, #actionsMenu - 1 do
 		local line = vim.api.nvim_buf_get_lines(menuBuf, action_start + i, action_start + i + 1, false)[1]
 		if line then
