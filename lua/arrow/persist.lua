@@ -73,8 +73,10 @@ function M.toggle(filename)
 	local index = M.is_saved(filename)
 	if index then
 		M.remove(filename)
+		vim.notify(string.format(" Removed %s from bookmarks", filename), vim.log.levels.INFO)
 	else
 		M.save(filename)
+		vim.notify(string.format(" Added %s to bookmarks", filename), vim.log.levels.INFO)
 	end
 	notify()
 end

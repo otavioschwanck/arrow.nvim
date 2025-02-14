@@ -288,13 +288,16 @@ function M.toggle_line(call_buffer, line_nr, col_nr)
 	for i, bookmark in ipairs(persist.get_bookmarks_by(call_buffer)) do
 		if bookmark.line == line_nr then
 			is_saved = i
+			actioned_line = bookmark.line
 		end
 	end
 
 	if is_saved ~= nil then
 		persist.remove(is_saved, call_buffer)
+		vim.notify(string.format(" Removed line %s", line_nr), vim.log.levels.INFO)
 	else
 		persist.save(call_buffer, line_nr, col_nr)
+		vim.notify(string.format(" Saved line %s", line_nr), vim.log.levels.INFO)
 	end
 end
 
