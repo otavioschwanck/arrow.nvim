@@ -71,12 +71,13 @@ function M.toggle(filename)
 	filename = filename or utils.get_current_buffer_path()
 
 	local index = M.is_saved(filename)
+	local pathTail = vim.fn.fnamemodify(filename, ":t")
 	if index then
 		M.remove(filename)
-		vim.notify(string.format(" Removed %s from bookmarks", filename), vim.log.levels.INFO)
+		vim.notify(string.format(" Removed %s from bookmarks", pathTail), vim.log.levels.INFO)
 	else
 		M.save(filename)
-		vim.notify(string.format(" Added %s to bookmarks", filename), vim.log.levels.INFO)
+		vim.notify(string.format(" Added %s to bookmarks", pathTail), vim.log.levels.INFO)
 	end
 	notify()
 end
