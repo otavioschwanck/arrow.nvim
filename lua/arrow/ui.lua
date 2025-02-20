@@ -116,6 +116,10 @@ end
 
 local function format_single_filename(full_path, show_icons, line_number, is_global)
 	local formatted_name = ""
+	local home = vim.uv.os_homedir()
+	if home:sub(-1) ~= "/" then
+		home = home .. "/"
+	end
 
 	-- Handle directory paths
 	if vim.fn.isdirectory(full_path) == 1 then
@@ -130,6 +134,11 @@ local function format_single_filename(full_path, show_icons, line_number, is_glo
 		if #splitted_path > 1 then
 			local folder_name = splitted_path[#splitted_path]
 			local location = vim.fn.fnamemodify(full_path, ":h:h")
+
+			-- Replace home directory with ~
+			if vim.startswith(location, home) then
+				location = "~/" .. location:sub(#home + 1)
+			end
 
 			if config.getState("always_show_path") then
 				formatted_name = string.format("%s . %s", folder_name .. "/", location)
@@ -146,24 +155,25 @@ local function format_single_filename(full_path, show_icons, line_number, is_glo
 	else
 		-- Handle regular files
 		local tail_with_extension = vim.fn.fnamemodify(full_path, ":t")
+		local abs_path = vim.fn.fnamemodify(full_path, ":p")
+
+		-- Replace home directory with ~ for both global and local bookmarks
+		if vim.startswith(abs_path, home) then
+			abs_path = "~/" .. abs_path:sub(#home + 1)
+		end
 
 		if is_global then
-			-- For global bookmarks, show the full absolute path
-			local abs_path = vim.fn.fnamemodify(full_path, ":p")
-			-- Replace home directory with ~
-			local home = vim.uv.os_homedir()
-			if home:sub(-1) ~= "/" then
-				home = home .. "/"
-			end
-
-			if vim.startswith(abs_path, home) then
-				abs_path = "~/" .. abs_path:sub(#home + 1)
-			end
-
+			-- For global bookmarks, show the full (home-simplified) absolute path
 			formatted_name = abs_path
 		else
 			-- For local bookmarks, show filename and relative path
 			local path = vim.fn.fnamemodify(full_path, ":h")
+
+			-- Replace home directory with ~ in the path component
+			if vim.startswith(path, home) then
+				path = "~/" .. path:sub(#home + 1)
+			end
+
 			if path ~= "." then
 				formatted_name = string.format("%s . %s", tail_with_extension, path)
 			else
