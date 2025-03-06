@@ -284,11 +284,14 @@ end
 
 function M.toggle_line(call_buffer, line_nr, col_nr)
 	local is_saved
+	local bookmarks = persist.get_bookmarks_by(call_buffer)
 
-	for i, bookmark in ipairs(persist.get_bookmarks_by(call_buffer)) do
-		if bookmark.line == line_nr then
-			is_saved = i
-			actioned_line = bookmark.line
+	if bookmarks then
+		for i, bookmark in ipairs(bookmarks) do
+			if bookmark.line == line_nr then
+				is_saved = i
+				actioned_line = bookmark.line
+			end
 		end
 	end
 
