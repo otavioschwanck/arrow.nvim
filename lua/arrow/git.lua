@@ -3,7 +3,7 @@ local M = {}
 local config = require("arrow.config")
 
 function M.get_git_branch()
-	local git_files = vim.fs.find(".git", { upward = true, stop = vim.loop.os_homedir() })
+	local git_files = vim.fs.find(".git", { upward = true, stop = vim.uv.os_homedir() })
 
 	if git_files then
 		local result = vim.fn.system({ "git", "symbolic-ref", "--short", "HEAD" })

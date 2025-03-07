@@ -71,10 +71,13 @@ function M.toggle(filename)
 	filename = filename or utils.get_current_buffer_path()
 
 	local index = M.is_saved(filename)
+	local pathTail = vim.fn.fnamemodify(filename, ":t")
 	if index then
 		M.remove(filename)
+		vim.notify(string.format(" Removed %s from bookmarks", pathTail), vim.log.levels.INFO)
 	else
 		M.save(filename)
+		vim.notify(string.format(" Added %s to bookmarks", pathTail), vim.log.levels.INFO)
 	end
 	notify()
 end
@@ -221,6 +224,8 @@ function M.open_cache_file()
 
 	local winid = vim.api.nvim_open_win(bufnr, true, opts)
 
+	utils.setup_auto_close(bufnr, winid)
+
 	local close_buffer = ":lua vim.api.nvim_win_close(" .. winid .. ", {force = true})<CR>"
 	vim.api.nvim_buf_set_keymap(bufnr, "n", "q", close_buffer, { noremap = true, silent = true })
 	vim.api.nvim_buf_set_keymap(bufnr, "n", "<Esc>", close_buffer, { noremap = true, silent = true })
@@ -246,6 +251,28 @@ function M.open_cache_file()
 	vim.cmd("setlocal nu")
 
 	return bufnr, winid
+end
+
+function M.refresh_cache()
+	-- Refresh git branch and save key
+	git.refresh_git_branch()
+	config.setState("save_key_cached", config.getState("save_key")())
+
+	-- Reload global bookmarks
+	require("arrow.global_bookmarks").load_cache_file()
+
+	-- Reload local bookmarks
+	M.load_cache_file()
+
+	-- Refresh current buffer's bookmarks if applicable
+	local bufnr = vim.api.nvim_get_current_buf()
+	local buffer_persist = require("arrow.buffer_persist")
+	if vim.api.nvim_buf_is_valid(bufnr) then
+		buffer_persist.load_buffer_bookmarks(bufnr)
+	end
+
+	-- Notify any listeners
+	notify()
 end
 
 return M

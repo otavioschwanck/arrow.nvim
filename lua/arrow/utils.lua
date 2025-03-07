@@ -2,6 +2,14 @@ local M = {}
 
 local config = require("arrow.config")
 
+local DEBUG_MODE = false
+
+function M.log(...)
+	if DEBUG_MODE then
+		vim.print(...)
+	end
+end
+
 function M.table_comp(o1, o2)
 	local callList = {}
 
@@ -135,6 +143,20 @@ end
 
 function M.string_contains_whitespace(str)
 	return string.match(str, "%s") ~= nil
+end
+
+function M.setup_auto_close(bufnr, win_id)
+	vim.api.nvim_create_autocmd({ "FocusLost", "BufLeave" }, {
+		buffer = bufnr,
+		once = true,
+		callback = function()
+			-- Only close if the window still exists
+			if vim.api.nvim_win_is_valid(win_id) then
+				vim.api.nvim_win_close(win_id, true)
+			end
+		end,
+		desc = "Auto-close Arrow window on focus lost",
+	})
 end
 
 return M

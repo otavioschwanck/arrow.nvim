@@ -3,6 +3,7 @@ local M = {}
 local preview_buffers = {}
 
 local persist = require("arrow.buffer_persist")
+local utils = require("arrow.utils")
 local config = require("arrow.config")
 
 local lastRow = 0
@@ -64,7 +65,6 @@ function M.spawn_preview_window(buffer, index, bookmark, bookmark_count)
 	local row = height + (index - 1) * (lines_count + 2) - (bookmark_count - 1) * lines_count
 
 	local width = math.ceil(vim.o.columns / 2)
-	
 	local zindex = config.getState("buffer_mark_zindex")
 
 	lastRow = row
@@ -284,17 +284,23 @@ end
 
 function M.toggle_line(call_buffer, line_nr, col_nr)
 	local is_saved
+	local bookmarks = persist.get_bookmarks_by(call_buffer)
 
-	for i, bookmark in ipairs(persist.get_bookmarks_by(call_buffer)) do
-		if bookmark.line == line_nr then
-			is_saved = i
+	if bookmarks then
+		for i, bookmark in ipairs(bookmarks) do
+			if bookmark.line == line_nr then
+				is_saved = i
+				actioned_line = bookmark.line
+			end
 		end
 	end
 
 	if is_saved ~= nil then
 		persist.remove(is_saved, call_buffer)
+		vim.notify(string.format(" Removed line %s", line_nr), vim.log.levels.INFO)
 	else
 		persist.save(call_buffer, line_nr, col_nr)
+		vim.notify(string.format(" Saved line %s", line_nr), vim.log.levels.INFO)
 	end
 end
 
@@ -330,6 +336,11 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_wi
 	end
 
 	vim.api.nvim_open_win(actions_buffer, true, window_config)
+
+	local win = vim.api.nvim_open_win(actions_buffer, true, window_config)
+
+	-- Add this line:
+	utils.setup_auto_close(actions_buffer, win)
 
 	local mappings = config.getState("mappings")
 
