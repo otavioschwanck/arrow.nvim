@@ -213,6 +213,7 @@ local function go_to_bookmark(bookmark)
 	if bookmark.line < top_line or bookmark.line >= top_line + win_height then
 		vim.cmd("normal! zz")
 	end
+	vim.api.nvim_exec_autocmds("User", { pattern = "ArrowGoToBookmark" })
 end
 
 local function toggle_delete_mode(action_buffer)
