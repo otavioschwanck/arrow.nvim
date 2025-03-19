@@ -208,6 +208,8 @@ function M.open_cache_file()
 	local row = math.ceil((vim.o.lines - height) / 2)
 	local col = math.ceil((vim.o.columns - width) / 2)
 
+	local border = config.getState("window").border
+
 	local opts = {
 		style = "minimal",
 		relative = "editor",
@@ -216,7 +218,7 @@ function M.open_cache_file()
 		row = row,
 		col = col,
 		focusable = true,
-		border = "single",
+		border = border,
 	}
 
 	local winid = vim.api.nvim_open_win(bufnr, true, opts)
