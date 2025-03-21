@@ -42,57 +42,71 @@ function M.clear_buffer_ext_marks(bufnr)
 end
 
 function M.redraw_bookmarks(bufnr, result)
-	for i, res in ipairs(result) do
-		local indexes = config.getState("index_keys")
+  -- Get the total number of lines in the buffer
+  local line_count = vim.api.nvim_buf_line_count(bufnr)
+  
+  for i, res in ipairs(result) do
+    local indexes = config.getState("index_keys")
 
-		local line = res.line
+    local line = res.line
+    
+    -- Skip invalid lines that are out of range
+    if line <= 0 or line > line_count then
+      -- Skip this bookmark as it's out of range
+      goto continue
+    end
 
-		local id = vim.api.nvim_buf_set_extmark(bufnr, ns, line - 1, -1, {
-			sign_text = indexes:sub(i, i) .. "",
-			sign_hl_group = "ArrowBookmarkSign",
-			hl_mode = "combine",
-		})
+    local id = vim.api.nvim_buf_set_extmark(bufnr, ns, line - 1, -1, {
+      sign_text = indexes:sub(i, i) .. "",
+      sign_hl_group = "ArrowBookmarkSign",
+      hl_mode = "combine",
+    })
 
-		res.ext_id = id
-	end
-	notify()
+    res.ext_id = id
+    
+    ::continue::
+  end
+  notify()
 end
 
 function M.load_buffer_bookmarks(bufnr)
-	-- return if already loaded
-	if M.local_bookmarks[bufnr] ~= nil then
-		return
-	end
+  -- return if already loaded
+  if M.local_bookmarks[bufnr] ~= nil then
+    return
+  end
 
-	if
-		M.last_sync_bookmarks[bufnr] ~= nil and utils.table_comp(M.last_sync_bookmarks[bufnr], M.local_bookmarks[bufnr])
-	then
-		return
-	end
+  if
+    M.last_sync_bookmarks[bufnr] ~= nil and utils.table_comp(M.last_sync_bookmarks[bufnr], M.local_bookmarks[bufnr])
+  then
+    return
+  end
 
-	bufnr = bufnr or vim.api.nvim_get_current_buf()
+  bufnr = bufnr or vim.api.nvim_get_current_buf()
 
-	local path = M.cache_file_path(vim.fn.expand("%:p"))
+  local path = M.cache_file_path(vim.fn.expand("%:p"))
 
-	if vim.fn.filereadable(path) == 0 then
-		M.local_bookmarks[bufnr] = {}
-	else
-		local f = assert(io.open(path, "rb"))
+  if vim.fn.filereadable(path) == 0 then
+    M.local_bookmarks[bufnr] = {}
+  else
+    local f = assert(io.open(path, "rb"))
 
-		local content = f:read("a")
+    local content = f:read("a")
 
-		f:close()
+    f:close()
 
-		local success, result = pcall(json.decode, content)
-		if success then
-			M.local_bookmarks[bufnr] = result
-
-			M.redraw_bookmarks(bufnr, result)
-		else
-			M.local_bookmarks[bufnr] = {}
-		end
-	end
-	notify()
+    local success, result = pcall(json.decode, content)
+    if success then
+      M.local_bookmarks[bufnr] = result
+      
+      -- Add this line to validate and update bookmarks before redrawing
+      M.update(bufnr)
+      
+      M.redraw_bookmarks(bufnr, M.local_bookmarks[bufnr])
+    else
+      M.local_bookmarks[bufnr] = {}
+    end
+  end
+  notify()
 end
 
 function M.sync_buffer_bookmarks(bufnr)
