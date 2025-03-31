@@ -27,7 +27,7 @@ local function getActionsMenu()
 	local return_mappings = {
 		string.format("%s Edit Arrow File", mappings.edit),
 		string.format("%s Clear All Items", mappings.clear_all_items),
-		string.format("%s Delete mode", mappings.delete_mode),
+		string.format("%s Delete Mode", mappings.delete_mode),
 		string.format("%s Open Vertical", mappings.open_vertical),
 		string.format("%s Open Horizontal", mappings.open_horizontal),
 		string.format("%s Next Item", mappings.next_item),
@@ -253,7 +253,7 @@ local function render_highlights(buffer)
 	local horizontalModelLine = -1
 
 	for i, action in ipairs(actionsMenu) do
-		if action:find(mappings.delete_mode .. " Delete mode") then
+		if action:find(mappings.delete_mode .. " Delete Mode") then
 			deleteModeLine = i - 1
 		end
 
