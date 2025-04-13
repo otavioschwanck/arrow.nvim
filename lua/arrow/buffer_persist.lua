@@ -44,12 +44,12 @@ end
 function M.redraw_bookmarks(bufnr, result)
   -- Get the total number of lines in the buffer
   local line_count = vim.api.nvim_buf_line_count(bufnr)
-  
+
   for i, res in ipairs(result) do
     local indexes = config.getState("index_keys")
 
     local line = res.line
-    
+
     -- Skip invalid lines that are out of range
     if line <= 0 or line > line_count then
       -- Skip this bookmark as it's out of range
@@ -63,7 +63,7 @@ function M.redraw_bookmarks(bufnr, result)
     })
 
     res.ext_id = id
-    
+
     ::continue::
   end
   notify()
@@ -83,26 +83,45 @@ function M.load_buffer_bookmarks(bufnr)
 
   bufnr = bufnr or vim.api.nvim_get_current_buf()
 
-  local path = M.cache_file_path(vim.fn.expand("%:p"))
+  -- Use absolute path for consistency in cache file naming
+  local buffer_path = vim.api.nvim_buf_get_name(bufnr)
+  if buffer_path == "" then return end -- Don't process unnamed buffers
+  local absolute_buffer_path = vim.fn.fnamemodify(buffer_path, ":p")
+  local path = M.cache_file_path(absolute_buffer_path)
+
 
   if vim.fn.filereadable(path) == 0 then
     M.local_bookmarks[bufnr] = {}
   else
-    local f = assert(io.open(path, "rb"))
+    -- Use vim.fn.readfile for potentially better handling of file reading
+    local read_ok, content_lines = pcall(vim.fn.readfile, path)
+    if not read_ok or not content_lines then
+        vim.notify("Arrow: Failed to read buffer bookmarks from: " .. path, vim.log.levels.ERROR)
+        M.local_bookmarks[bufnr] = {}
+        return
+    end
+    local content = table.concat(content_lines, "\n")
 
-    local content = f:read("a")
-
-    f:close()
+    -- Handle empty file case explicitly
+    if content == "" then
+        M.local_bookmarks[bufnr] = {}
+        notify() -- Notify even if empty, e.g., for satellite
+        return
+    end
 
     local success, result = pcall(json.decode, content)
     if success then
       M.local_bookmarks[bufnr] = result
-      
+
+      --[[ REMOVED THIS CALL: This was likely causing the issue during session load
       -- Add this line to validate and update bookmarks before redrawing
       M.update(bufnr)
-      
+      --]]
+
+      -- Redraw bookmarks based *only* on the loaded data initially
       M.redraw_bookmarks(bufnr, M.local_bookmarks[bufnr])
     else
+      vim.notify("Arrow: Failed to decode JSON bookmarks for " .. absolute_buffer_path .. "\nError: " .. tostring(result), vim.log.levels.ERROR)
       M.local_bookmarks[bufnr] = {}
     end
   end
