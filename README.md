@@ -94,6 +94,10 @@ Just press the leader_key set on setup and follow you heart. (Is that easy)
     col = "auto",
     border = "double",
   },
+  window = { -- control the size of arrow edit window
+    width = 80,
+    height = 10,
+  },
   per_buffer_config = {
     lines = 4, -- Number of lines showed on preview.
     sort_automatically = true, -- Auto sort buffer marks.

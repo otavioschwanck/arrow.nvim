@@ -202,8 +202,10 @@ function M.open_cache_file()
 
 	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, cache_content)
 
-	local width = math.min(80, vim.fn.winwidth(0) - 4)
-	local height = math.min(20, #cache_content + 2)
+	local cache_window = config.getState("cache_window")
+
+	local width = cache_window.width
+	local height = cache_window.height
 
 	local row = math.ceil((vim.o.lines - height) / 2)
 	local col = math.ceil((vim.o.columns - width) / 2)
