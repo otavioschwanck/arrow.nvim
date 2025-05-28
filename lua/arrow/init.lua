@@ -47,7 +47,14 @@ function M.setup(opts)
 		border = "single",
 	}
 
+	local default_cache_window_config = {
+		width = 80,
+		height = 10,
+	}
+
 	config.setState("window", utils.join_two_keys_tables(default_window_config, opts.window or {}))
+
+	config.setState("cache_window", utils.join_two_keys_tables(default_cache_window_config, opts.cache_window or {}))
 
 	config.setState(
 		"per_buffer_config",
