@@ -25,8 +25,10 @@ return {
   },
   opts = {
     show_icons = true,
+    icon_provider = 'nvim-web-devicons', -- or 'mini.icons'
     leader_key = ';', -- Recommended to be a single key
     buffer_leader_key = 'm', -- Per Buffer Mappings
+
   }
 }
 ```
@@ -81,6 +83,7 @@ Just press the leader_key set on setup and follow you heart. (Is that easy)
     remove = "x", -- only used if separate_save_and_remove is true
     next_item = "]",
     prev_item = "["
+    toggle_bookmark_type = '<TAB>', -- toggle between file and dir bookmark
   },
   custom_actions = {
     open = function(target_file_name, current_file_name) end, -- target_file_name = file selected to be open, current_file_name = filename from where this was called
@@ -104,6 +107,12 @@ Just press the leader_key set on setup and follow you heart. (Is that easy)
     },
     zindex = 10, --default 50
     treesitter_context = nil, -- it can be { line_shift_down = 2 }, currently not usable, for detail see https://github.com/otavioschwanck/arrow.nvim/pull/43#issue-2236320268
+  },
+  dir_bookmark_config = {
+    -- required to open dir bookmarks
+    open_action = function(dir_path, _) -- action to take when opening a dir in an oil floating window 
+      require('oil').open_float(dir_path)
+    end,
   },
   separate_save_and_remove = false, -- if true, will remove the toggle and create the save/remove keymaps.
   leader_key = ";",

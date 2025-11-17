@@ -16,6 +16,9 @@ function M.setup(opts)
 	vim.cmd("highlight default link ArrowCurrentFile SpecialChar")
 	vim.cmd("highlight default link ArrowAction Character")
 	vim.cmd("highlight default link ArrowDeleteMode DiagnosticError")
+	vim.cmd("highlight default link ArrowSplitMode Character")
+	vim.cmd("highlight default link ArrowFileBorder FloatBorder")
+	vim.cmd("highlight default link ArrowDirBorder FloatBorder")
 
 	opts = opts or {}
 
@@ -35,6 +38,7 @@ function M.setup(opts)
 		remove = "x",
 		next_item = "]",
 		prev_item = "[",
+		toggle_bookmark_type = "<TAB>",
 	}
 
 	local default_window_config = {
@@ -85,13 +89,31 @@ function M.setup(opts)
 	config.setState("global_bookmarks", opts.global_bookmarks or false)
 	config.setState("relative_path", opts.relative_path or false)
 	config.setState("separate_save_and_remove", opts.separate_save_and_remove or false)
+	config.setState("icon_provider", opts.icon_provider or "web_dev_icons")
+
+	-- Directory bookmarks configuration
+	local default_dir_bookmark_config = {
+		open_action = function(_, _)
+			print("no dir action found")
+		end,
+	}
+	config.setState(
+		"dir_bookmark_config",
+		utils.join_two_keys_tables(default_dir_bookmark_config, opts.dir_bookmark_config or {})
+	)
+	config.setState("current_bookmark_type", "file")
 
 	config.setState("save_key", save_keys[opts.save_key] or save_keys.cwd)
 	config.setState("save_key_name", opts.save_key or "cwd")
 	config.setState("save_key_cached", config.getState("save_key")())
 
 	if leader_key then
-		vim.keymap.set("n", leader_key, ui.openMenu, { noremap = true, silent = true, nowait = true, desc = "Arrow File Mappings" })
+		vim.keymap.set(
+			"n",
+			leader_key,
+			ui.openMenu,
+			{ noremap = true, silent = true, nowait = true, desc = "Arrow File Mappings" }
+		)
 	end
 
 	if buffer_leader_key then
@@ -180,10 +202,46 @@ function M.setup(opts)
 		"reset",
 	}
 
+	local default_dir_full_path_list = {
+		"src",
+		"lib",
+		"library",
+		"utils",
+		"bin",
+		"cmd",
+		"docs",
+		"doc",
+		"tests",
+		"specs",
+		"configs",
+		"config",
+		"settings",
+		"images",
+		"themes",
+		"assets",
+		"static",
+		"public",
+		"scripts",
+		"examples",
+		"modules",
+		"development",
+		"dev",
+		"lua",
+		"tools",
+		".github",
+		".vscode",
+		".config",
+	}
+
 	config.setState("mappings", utils.join_two_keys_tables(default_mappings, opts.mappings or {}))
 	config.setState("full_path_list", utils.join_two_arrays(default_full_path_list, opts.full_path_list or {}))
+	config.setState(
+		"dir_full_path_list",
+		utils.join_two_arrays(default_dir_full_path_list, opts.dir_full_path_list or {})
+	)
 
 	persist.load_cache_file()
+	persist.load_dir_cache_file()
 
 	vim.api.nvim_create_augroup("arrow", { clear = true })
 
@@ -191,6 +249,7 @@ function M.setup(opts)
 		callback = function()
 			git.refresh_git_branch()
 			persist.load_cache_file()
+			persist.load_dir_cache_file()
 			config.setState("save_key_cached", config.getState("save_key")())
 		end,
 		desc = "load cache file on DirChanged",

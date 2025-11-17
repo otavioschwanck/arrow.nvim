@@ -9,15 +9,16 @@ local function save_key()
 		return "global"
 	end
 
+	local save_key_cached = config.getState("save_key_cached") or vim.fn.getcwd()
 	if config.getState("separate_by_branch") then
 		local branch = git.refresh_git_branch()
 
 		if branch then
-			return utils.normalize_path_to_filename(config.getState("save_key_cached") .. "-" .. branch)
+			return utils.normalize_path_to_filename(save_key_cached .. "-" .. branch)
 		end
 	end
 
-	return utils.normalize_path_to_filename(config.getState("save_key_cached"))
+	return utils.normalize_path_to_filename(save_key_cached)
 end
 
 local function cache_file_path()
@@ -32,6 +33,26 @@ local function cache_file_path()
 	return save_path .. "/" .. save_key()
 end
 
+local function dir_cache_file_path()
+	local save_path_func = config.getState("save_path")
+	local save_path
+
+	if save_path_func then
+		save_path = save_path_func()
+	else
+		-- Fallback if save_path is not configured
+		save_path = vim.fn.stdpath("cache") .. "/arrow"
+	end
+
+	save_path = save_path:gsub("/$", "")
+
+	if vim.fn.isdirectory(save_path) == 0 then
+		vim.fn.mkdir(save_path, "p")
+	end
+
+	return save_path .. "/" .. save_key() .. "_dir"
+end
+
 local function notify()
 	vim.api.nvim_exec_autocmds("User", {
 		pattern = "ArrowUpdate",
@@ -39,6 +60,85 @@ local function notify()
 end
 
 vim.g.arrow_filenames = {}
+vim.g.arrow_dir_bookmarks = {}
+
+function M.save_dir(directory)
+	if not M.is_dir_saved(directory) then
+		local new_table = vim.g.arrow_dir_bookmarks
+		table.insert(new_table, directory)
+		vim.g.arrow_dir_bookmarks = new_table
+
+		M.cache_dir_file()
+		M.load_dir_cache_file()
+	end
+	notify()
+end
+
+function M.remove_dir(directory)
+	local index = M.is_dir_saved(directory)
+	if index then
+		local new_table = vim.g.arrow_dir_bookmarks
+		table.remove(new_table, index)
+		vim.g.arrow_dir_bookmarks = new_table
+
+		M.cache_dir_file()
+		M.load_dir_cache_file()
+	end
+	notify()
+end
+
+function M.toggle_dir(directory)
+	git.refresh_git_branch()
+
+	directory = directory or vim.fn.getcwd()
+
+	local index = M.is_dir_saved(directory)
+	if index then
+		M.remove_dir(directory)
+	else
+		M.save_dir(directory)
+	end
+	notify()
+end
+
+function M.clear_dir()
+	vim.g.arrow_dir_bookmarks = {}
+	M.cache_dir_file()
+	M.load_dir_cache_file()
+	notify()
+end
+
+function M.is_dir_saved(directory)
+	for i, dir in ipairs(vim.g.arrow_dir_bookmarks) do
+		if dir == directory then
+			return i
+		end
+	end
+	return nil
+end
+
+function M.load_dir_cache_file()
+	local cache_path = dir_cache_file_path()
+
+	if vim.fn.filereadable(cache_path) == 0 then
+		vim.g.arrow_dir_bookmarks = {}
+
+		return
+	end
+
+	local success, data = pcall(vim.fn.readfile, cache_path)
+	if success then
+		vim.g.arrow_dir_bookmarks = data
+	else
+		vim.g.arrow_dir_bookmarks = {}
+	end
+end
+
+function M.cache_dir_file()
+	local content = vim.fn.join(vim.g.arrow_dir_bookmarks, "\n")
+	local lines = vim.fn.split(content, "\n")
+	vim.fn.writefile(lines, dir_cache_file_path())
+end
 
 function M.save(filename)
 	if not M.is_saved(filename) then
@@ -146,6 +246,19 @@ function M.go_to(index)
 	end
 end
 
+function M.go_to_dir(index)
+	local directory = vim.g.arrow_dir_bookmarks[index]
+
+	if not directory then
+		return
+	end
+
+	local dir_bookmark_config = config.getState("dir_bookmark_config")
+	if dir_bookmark_config and dir_bookmark_config.open_action then
+		dir_bookmark_config.open_action(directory, vim.b.filename)
+	end
+end
+
 function M.next()
 	git.refresh_git_branch()
 
@@ -178,10 +291,11 @@ function M.previous()
 	M.go_to(previous_index)
 end
 
-function M.open_cache_file()
+function M.open_cache_file(type)
 	git.refresh_git_branch()
+	local bookmark_type = type or "file"
 
-	local cache_path = cache_file_path()
+	local cache_path = bookmark_type == "dir" and dir_cache_file_path() or cache_file_path()
 	local cache_content
 
 	if vim.fn.filereadable(cache_path) == 0 then
@@ -242,6 +356,7 @@ function M.open_cache_file()
 			local updated_content = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
 			vim.fn.writefile(updated_content, cache_path)
 			M.load_cache_file()
+			M.load_dir_cache_file()
 		end,
 	})
 

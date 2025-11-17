@@ -4,6 +4,7 @@ local preview_buffers = {}
 
 local persist = require("arrow.buffer_persist")
 local config = require("arrow.config")
+local namespace = vim.api.nvim_create_namespace("arrow_buffers")
 
 local lastRow = 0
 local has_current_line = false
@@ -92,10 +93,10 @@ function M.spawn_preview_window(buffer, index, bookmark, bookmark_count)
 		extra_title = "(Current)"
 	end
 
-	vim.api.nvim_win_set_option(win, "scrolloff", 999)
+	vim.api.nvim_set_option_value("scrolloff", 999, { win = win })
 	vim.api.nvim_win_set_cursor(win, { bookmark.line, 0 })
 	vim.api.nvim_win_set_config(win, { title = displayIndex .. " " .. extra_title })
-	vim.api.nvim_win_set_option(win, "number", true)
+	vim.api.nvim_set_option_value("number", true, { win = win })
 
 	table.insert(preview_buffers, { buffer = buffer, win = win, index = index })
 
@@ -104,7 +105,7 @@ function M.spawn_preview_window(buffer, index, bookmark, bookmark_count)
 		local shift = ctx_config.line_shift_down
 
 		local win_view = vim.fn.winsaveview()
-		vim.api.nvim_win_set_option(win, "scrolloff", 0)
+		vim.api.nvim_set_option_value("scrolloff", 0, { win = win })
 		vim.fn.winrestview({ topline = win_view.topline - shift })
 
 		local ok, _ = pcall(require, "treesitter-context")
@@ -163,16 +164,22 @@ local function go_to_window()
 end
 
 local function render_highlights(buffer)
-	vim.api.nvim_buf_clear_namespace(buffer, -1, 0, -1)
+	vim.api.nvim_buf_clear_namespace(buffer, namespace, 0, -1)
 
 	local buffer_line_count = vim.api.nvim_buf_line_count(buffer)
 
 	for i = 0, buffer_line_count - 1 do
-		vim.api.nvim_buf_add_highlight(buffer, -1, "ArrowFileIndex", i, 0, 3)
+		vim.api.nvim_buf_set_extmark(buffer, namespace, i, 0, {
+			end_col = 3,
+			hl_group = "ArrowFileIndex",
+		})
 
 		-- if line contains Delete Mode
 		if string.match(vim.fn.getline(i + 1), "Delete Mode") and delete_mode then
-			vim.api.nvim_buf_add_highlight(buffer, -1, "ArrowDeleteMode", i, 0, 3)
+			vim.api.nvim_buf_set_extmark(buffer, namespace, i, 0, {
+				end_col = 3,
+				hl_group = "ArrowDeleteMode",
+			})
 		end
 	end
 end
@@ -224,8 +231,8 @@ local function toggle_delete_mode(action_buffer)
 	else
 		delete_mode = true
 
-		current_highlight = vim.api.nvim_get_hl_by_name("FloatBorder", true)
-		local arrow_delete_mode = vim.api.nvim_get_hl_by_name("ArrowDeleteMode", true)
+		current_highlight = vim.api.nvim_get_hl(0, { name = "FloatBorder" })
+		local arrow_delete_mode = vim.api.nvim_get_hl(0, { name = "ArrowDeleteMode" })
 
 		vim.api.nvim_set_hl(0, "FloatBorder", { fg = arrow_delete_mode.bg or "red" })
 	end
@@ -355,8 +362,7 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_wi
 
 	local menuKeymapOpts = { noremap = true, silent = true, buffer = actions_buffer, nowait = true }
 
-	vim.api.nvim_buf_set_option(actions_buffer, "modifiable", true)
-
+	vim.api.nvim_set_option_value("modifiable", true, { buf = actions_buffer })
 	vim.api.nvim_buf_set_lines(actions_buffer, 0, -1, false, lines)
 
 	vim.keymap.set("n", config.getState("leader_key"), function()
@@ -485,7 +491,7 @@ function M.openMenu(bufnr)
 		M.spawn_preview_window(opt[1], opt[2], opt[3], #bookmarks)
 	end
 
-	M.spawn_action_windows(bufnr, bookmarks, line_nr, col_nr, cur_win)
+	M.spawn_action_windows(bufnr, bookmarks, line_nr, col_nr)
 end
 
 return M
