@@ -359,6 +359,8 @@ function M.spawn_action_windows(call_buffer, bookmarks, line_nr, col_nr, call_wi
 
 	vim.api.nvim_buf_set_lines(actions_buffer, 0, -1, false, lines)
 
+	vim.api.nvim_buf_set_option(actions_buffer, "modifiable", false)
+
 	vim.keymap.set("n", config.getState("leader_key"), function()
 		closeMenu(actions_buffer, call_buffer)
 

@@ -123,9 +123,17 @@ function M.load_cache_file()
 end
 
 function M.cache_file()
-	local content = vim.fn.join(vim.g.arrow_filenames, "\n")
-	local lines = vim.fn.split(content, "\n")
-	vim.fn.writefile(lines, cache_file_path())
+	local filenames = vim.g.arrow_filenames or {}
+
+	if vim.tbl_isempty(filenames) then
+		local cache_path = cache_file_path()
+		if vim.fn.filereadable(cache_path) == 1 then
+			vim.fn.delete(cache_path)
+		end
+		return
+	end
+
+	vim.fn.writefile(filenames, cache_file_path())
 end
 
 function M.go_to(index)
