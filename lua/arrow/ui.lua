@@ -49,6 +49,10 @@ local function getActionsMenu()
 	return return_mappings
 end
 
+local function replace_home(filename)
+	return string.gsub(filename, vim.env.HOME, "~")
+end
+
 local function format_file_names(file_names)
 	local full_path_list = config.getState("full_path_list")
 	local formatted_names = {}
@@ -57,6 +61,7 @@ local function format_file_names(file_names)
 	local name_occurrences = {}
 
 	for _, full_path in ipairs(file_names) do
+		full_path = replace_home(full_path)
 		local tail = vim.fn.fnamemodify(full_path, ":t:r") -- Get the file name without extension
 
 		if vim.fn.isdirectory(full_path) == 1 then
@@ -84,6 +89,7 @@ local function format_file_names(file_names)
 	end
 
 	for _, full_path in ipairs(file_names) do
+		full_path = replace_home(full_path)
 		local tail = vim.fn.fnamemodify(full_path, ":t:r")
 		local tail_with_extension = vim.fn.fnamemodify(full_path, ":t")
 
